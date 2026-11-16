@@ -1,0 +1,1012 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>アドベンチャー or アドベンチャ</title>
+<style>
+:root{--bg:#151226;--bg2:#211c3a;--ink:#1b1730;--cream:#f7f0df;--pink:#ff4f8b;--yel:#ffd23f;--cy:#5de0e6;--mut:#a9a2c7}
+*{box-sizing:border-box}
+html,body{margin:0;min-height:100%;background:var(--bg);color:var(--cream);
+  font-family:"Hiragino Maru Gothic ProN","Yu Gothic","Meiryo","Noto Sans JP",sans-serif;font-size:15px;line-height:1.6}
+body{background-image:linear-gradient(rgba(255,255,255,.03) 1px,transparent 1px),linear-gradient(90deg,rgba(255,255,255,.03) 1px,transparent 1px);background-size:28px 28px}
+#app{max-width:860px;margin:0 auto;padding:14px;min-height:100vh;display:flex;flex-direction:column;justify-content:center}
+h1,h2,h3,p{margin:0}
+button{font:inherit;font-weight:800;cursor:pointer;border:3px solid var(--ink);background:var(--yel);color:var(--ink);padding:.5em 1.2em;border-radius:999px;box-shadow:0 4px 0 var(--ink);transition:transform .06s,box-shadow .06s}
+button:hover{filter:brightness(1.06)}
+button:active{transform:translateY(4px);box-shadow:0 0 0 var(--ink)}
+button:focus-visible{outline:3px solid var(--cy);outline-offset:2px}
+button.pk{background:var(--pink);color:#fff}
+button.sub{background:var(--cream);box-shadow:0 3px 0 var(--ink);padding:.3em .8em;font-size:13px}
+.center{text-align:center;display:flex;flex-direction:column;align-items:center;gap:14px}
+/* title */
+.pre{color:var(--cy);font-weight:800;letter-spacing:.2em;font-size:13px}
+.logo{font-size:clamp(30px,8vw,64px);font-weight:900;line-height:1.15;color:var(--cream);text-shadow:4px 4px 0 var(--pink)}
+.logo span{display:block;font-size:.45em;color:var(--yel);text-shadow:none;letter-spacing:.3em;margin:.1em 0}
+.logo i{font-style:normal;color:var(--mut);text-decoration:line-through;text-decoration-color:var(--pink)}
+.small{font-size:12px;color:var(--mut);max-width:34em}
+select{font:inherit;border:2px solid var(--ink);border-radius:8px;padding:2px 6px;max-width:60vw}
+.gens{display:flex;gap:8px;flex-wrap:wrap;justify-content:center;max-width:560px}.gens small{margin-left:5px;opacity:.6;font-weight:600}
+label.opt{display:inline-flex;gap:8px;align-items:center;background:var(--bg2);padding:6px 14px;border-radius:999px;cursor:pointer}
+/* stage + message window */
+.stage{position:relative;background:#000;border:4px solid var(--ink);border-radius:14px;overflow:hidden;aspect-ratio:8/5;box-shadow:0 0 0 3px var(--bg2);cursor:pointer}
+.stage img{width:100%;height:100%;object-fit:cover;display:block;background:#fff}
+.mon{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;font-size:clamp(11px,2.2vw,16px);padding:16px;text-align:center;background:#0d1b2a;color:#9fe8a8;font-family:ui-monospace,Menlo,Consolas,monospace}
+.mon.nf{background:#f4f4f6;color:#333}
+.mon.nf b{font-size:clamp(44px,14vw,110px);line-height:1;color:#c9c9d1;font-weight:900}
+.mon.nf strong{font-size:clamp(15px,3.4vw,24px)}
+.mon.panic{animation:shake .25s infinite}
+@keyframes shake{25%{transform:translate(-4px,2px)}50%{transform:translate(4px,-2px)}75%{transform:translate(-2px,-3px)}}
+.frames{display:flex;gap:8px;flex-wrap:wrap;justify-content:center}
+.frames div{width:17%;min-width:70px;aspect-ratio:4/3;border:2px dashed #9fe8a8;display:grid;place-items:center;font-size:12px}
+.mw{position:relative;margin-top:-34px;margin-inline:12px;background:var(--cream);color:var(--ink);border:4px solid var(--ink);border-radius:14px;padding:16px 18px 20px;min-height:104px;box-shadow:6px 6px 0 var(--pink);z-index:2;cursor:pointer}
+.mw .who{position:absolute;top:-16px;left:14px;background:var(--ink);color:var(--yel);padding:1px 14px;border-radius:999px;font-weight:800;font-size:13px}
+.mw p{font-size:clamp(15px,2.6vw,19px);font-weight:700}
+.mw .nx{position:absolute;right:14px;bottom:6px;color:var(--pink);animation:bob .8s infinite}
+@keyframes bob{50%{transform:translateY(4px)}}
+.cap{position:absolute;left:10px;top:10px;background:rgba(27,23,48,.85);color:var(--yel);padding:2px 12px;border-radius:999px;font-size:12px;font-weight:800}
+.scr{position:absolute;inset:0;display:flex;flex-direction:column;font-family:"Hiragino Kaku Gothic ProN","Yu Gothic","Meiryo",sans-serif;font-size:clamp(9px,1.9vw,14px);line-height:1.45;color:#222;text-align:left;padding-bottom:38px;overflow:hidden}
+.scr.panic{animation:shake .25s infinite}
+.cav{width:1.9em;height:1.9em;border-radius:50%;background:#ffd23f;color:#222;display:grid;place-items:center;font-weight:800;flex:none;font-size:.9em}
+.chat{background:#93aacb}.chd{background:#2b3a55;color:#fff;padding:.35em .8em;font-weight:700}
+.cbody{flex:1;display:flex;flex-direction:column;gap:.4em;padding:.5em .7em;justify-content:flex-end;overflow:hidden}
+.cm{display:flex;gap:.4em;align-items:flex-end;max-width:86%}.cm.me{align-self:flex-end}
+.bub{background:#fff;border-radius:1em;padding:.25em .75em}.cm.me .bub{background:#8de055}
+.cm small{font-size:.72em;color:#fff;min-width:2em;text-align:right}
+.csys{align-self:center;background:rgba(0,0,0,.25);color:#fff;border-radius:999px;padding:0 .8em;font-size:.8em}
+.drv{background:#f4f6fa}.dhd{background:#fff;border-bottom:1px solid #d5dbe5;padding:.4em .8em;display:flex;gap:.5em;align-items:center;white-space:nowrap}
+.dhd span{margin-left:auto;color:#789;font-size:.85em}
+.dgrid{display:flex;gap:.6em;padding:.7em;align-items:flex-start;justify-content:center}
+.df{flex:1;max-width:19%;background:#fff;border:1px solid #d5dbe5;border-radius:.4em;overflow:hidden}.df svg{display:block;width:100%}
+.dn{font-size:.7em;padding:.2em .35em;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.dnote{margin:0 .7em;background:#fff8d6;border:1px solid #e5d58a;border-radius:.4em;padding:.3em .6em}
+.lrow{display:flex;gap:.6em;background:#fff;border-bottom:1px solid #e3e7ee;padding:.35em .8em}.lrow b{margin-left:auto;color:#d22}
+.pop{position:absolute;left:50%;top:44%;transform:translate(-50%,-50%);background:#fff;border:2px solid #d22;border-radius:.5em;padding:.5em 1em;font-weight:800;color:#d22;box-shadow:0 4px 12px rgba(0,0,0,.25);white-space:nowrap}
+.mail{flex-direction:row;background:#fff}
+.mside{width:25%;background:#eef1f6;padding:.5em;display:flex;flex-direction:column;gap:.25em}.mside div{padding:.15em .5em;border-radius:.4em}.mside .on{background:#cfdcf5;font-weight:700}
+.mmain{flex:1;padding:.6em .9em;display:flex;flex-direction:column;gap:.4em;min-width:0}.msub{font-weight:800;font-size:1.25em}
+.mfrom{display:flex;gap:.5em;align-items:center;border-bottom:1px solid #e3e7ee;padding-bottom:.35em}.mfrom small{display:block;color:#789}
+.mbody{line-height:1.7}.matt{color:#789;font-size:.9em}
+.badge{background:#d22;color:#fff;border-radius:.3em;padding:0 .5em;font-size:.7em;font-weight:700;vertical-align:middle}
+.dsk{background:#3d6fa5;align-items:center;justify-content:center}
+.win{background:#fff;border-radius:.5em;width:62%;overflow:hidden;box-shadow:0 6px 18px rgba(0,0,0,.35)}.wt{background:#dde3ec;padding:.25em .7em;font-weight:700}
+.wb{padding:.6em .9em;display:flex;flex-direction:column;gap:.3em}.pw{border:1px solid #99a;border-radius:.3em;padding:.15em .5em;letter-spacing:.2em}
+.wbtn{align-self:flex-end;display:flex;gap:.4em}.wbtn span{border:1px solid #99a;border-radius:.3em;padding:0 .8em}
+.docw{background:#8a8f99;align-items:center;padding-top:.7em}
+.paper{background:#fff;width:56%;padding:.6em 1em .9em;position:relative;box-shadow:0 3px 10px rgba(0,0,0,.3)}.paper h4{margin:0 0 .2em;text-align:center;font-size:1.3em;letter-spacing:.3em}
+.prow{display:flex;justify-content:space-between;border-bottom:1px solid #ccc;padding:.15em 0}
+.stamp{position:absolute;right:5%;bottom:10%;border:2px solid #d22;color:#d22;font-weight:800;padding:0 .5em;transform:rotate(-10deg);background:rgba(255,255,255,.85)}
+.sns{background:#e9eef5;align-items:center;justify-content:flex-start;padding-top:.6em}
+.post{background:#fff;border:1px solid #d5dbe5;border-radius:.6em;width:66%;padding:.5em .8em;display:flex;flex-direction:column;gap:.25em}
+.trk{padding:.6em 1.2em;display:flex;flex-direction:column;gap:.45em}
+.ts{display:flex;gap:.7em;align-items:center}.ts i{width:.8em;height:.8em;border-radius:50%;background:#b8c2d0;flex:none}.ts b{min-width:6em}
+.ts.now i{background:#e33;box-shadow:0 0 0 .25em rgba(238,51,51,.25)}.ts.now{color:#c22}
+.nws{background:#16233f;color:#fff;justify-content:center;gap:.4em;padding-left:1em;padding-right:1em}
+.nbar{align-self:flex-start;background:#e33;font-weight:800;padding:0 .8em;letter-spacing:.3em}
+.nhead{font-size:1.6em;font-weight:900;line-height:1.3}.nsub{opacity:.9}.ntick{background:#ffd23f;color:#111;padding:0 .6em;font-size:.85em;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.call{background:#20242c;color:#fff;align-items:center;justify-content:center;gap:.2em;text-align:center}
+.cface{width:4.2em;height:4.2em;border-radius:50%;background:#566170;display:grid;place-items:center;font-size:1.6em;font-weight:800;filter:grayscale(1)}
+.hang{width:2.2em;height:2.2em;border-radius:50%;background:#e33;display:grid;place-items:center;margin-top:.3em}
+.mlab{position:absolute;right:4%;top:8%;background:#fff;border-radius:.5em;padding:.3em .7em;box-shadow:0 3px 10px rgba(0,0,0,.25)}
+.qbar{height:1em;background:#dde3ec;border-radius:999px;overflow:hidden}.qbar i{display:block;height:100%;width:100%;background:#d22}
+/* brief / panels */
+.panel{background:var(--bg2);border:3px solid var(--ink);border-radius:14px;padding:16px}
+.tag{display:inline-block;background:var(--pink);color:#fff;font-weight:800;border-radius:999px;padding:0 12px;font-size:13px}
+.odai{font-size:clamp(18px,3.6vw,26px);font-weight:900;color:var(--yel);margin:6px 0}
+.quote{background:var(--cream);color:var(--ink);border-radius:10px;padding:8px 12px;font-weight:700;margin-top:6px}
+.quote b{color:var(--pink);margin-right:6px}
+/* draw */
+.cvw{position:relative}
+#ov{position:absolute;inset:0;width:100%;height:100%;pointer-events:none;border:4px solid transparent;border-radius:12px}
+.tw{display:inline-block;background:var(--cy);color:var(--ink);font-weight:800;border-radius:999px;padding:0 10px;font-size:13px}
+.sl,.cp{display:inline-flex;gap:6px;align-items:center;font-size:13px;background:var(--bg2);padding:3px 10px;border-radius:999px}
+.sl input{width:110px}.sl output{min-width:2.6em;text-align:right;font-variant-numeric:tabular-nums}
+.cp input{width:34px;height:26px;padding:0;border:2px solid var(--ink);border-radius:6px;background:none;cursor:pointer}
+.lines{margin-top:6px}.lines .quote{padding:4px 10px;font-size:14px;margin-top:4px}
+.bar{height:12px;background:var(--ink);border-radius:999px;overflow:hidden;margin:8px 0}
+.bar i{display:block;height:100%;width:100%;background:var(--cy);transition:width .25s linear}
+.bar i.hot{background:var(--pink)}
+#cv{width:100%;aspect-ratio:8/5;background:#fff;border:4px solid var(--ink);border-radius:12px;display:block;touch-action:none;cursor:crosshair}
+.tools{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-top:8px}
+.sw{width:28px;height:28px;border-radius:50%;border:3px solid var(--ink);padding:0;box-shadow:none}
+.sw.on{outline:3px solid var(--cy);outline-offset:2px}
+.tb{background:var(--cream);box-shadow:0 3px 0 var(--ink);padding:.25em .8em;font-size:13px}
+.tb.on{background:var(--cy)}
+.sp{flex:1}
+/* judge */
+.jg{display:grid;grid-template-columns:1fr 1fr;gap:14px;align-items:start}
+@media(max-width:640px){.jg{grid-template-columns:1fr}}
+.jg img{width:100%;border:4px solid var(--ink);border-radius:12px;background:#fff;display:block}
+.score{font-size:64px;font-weight:900;color:var(--yel);line-height:1}
+.score small{font-size:18px;color:var(--mut)}
+.meter{height:10px;background:var(--ink);border-radius:999px;overflow:hidden;margin:6px 0 10px}
+.meter i{display:block;height:100%;background:linear-gradient(90deg,var(--pink),var(--yel))}
+.dots::after{content:"";animation:dots 1.2s steps(4) infinite}
+@keyframes dots{0%{content:""}25%{content:"・"}50%{content:"・・"}75%{content:"・・・"}}
+/* result */
+.aw{background:var(--yel);color:var(--ink);border:3px solid var(--ink);border-radius:12px;padding:8px 14px;font-weight:700;text-align:center}.aw b{font-size:20px;font-weight:900;margin-left:6px}
+.news{background:var(--cream);color:var(--ink);border-radius:12px;padding:12px 16px;border:4px solid var(--ink);box-shadow:6px 6px 0 var(--yel)}
+.news small{font-weight:800;color:var(--pink);letter-spacing:.15em}
+.news h2{font-size:clamp(18px,4vw,28px);font-weight:900}
+.nums{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin:14px 0}
+.nums div{background:var(--bg2);border:3px solid var(--ink);border-radius:12px;padding:8px;text-align:center}
+.nums small{display:block;color:var(--mut);font-size:12px}
+.nums b{font-size:clamp(20px,5vw,34px);color:var(--yel);font-weight:900}
+.voices{display:grid;gap:8px}
+.vo{background:var(--bg2);border-radius:12px;padding:10px 12px;display:flex;gap:10px;border:2px solid rgba(255,255,255,.08);animation:pop .4s both}
+@keyframes pop{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:none}}
+.av{width:38px;height:38px;border-radius:50%;flex:none;display:grid;place-items:center;font-weight:900;color:var(--ink)}
+.vo b{font-size:13px}.vo span{color:var(--mut);font-size:12px;margin-left:8px}
+.gal{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:8px;margin-top:8px}
+.gal figure{margin:0;background:var(--bg2);border-radius:10px;overflow:hidden;border:2px solid var(--ink)}
+.gal img{width:100%;display:block;background:#fff}
+.gal figcaption{padding:5px 8px;font-size:12px}
+.gal figcaption b{color:var(--yel)}
+h3.sec{margin:18px 0 8px;color:var(--cy);font-size:15px;letter-spacing:.1em}
+@media (prefers-reduced-motion:reduce){.mon.panic,.mw .nx,.vo{animation:none}}
+</style>
+</head>
+<body>
+<div id="app"></div>
+<script>
+(function(){
+"use strict";
+const app=document.getElementById("app");
+const $=s=>app.querySelector(s);
+const esc=s=>String(s==null?"":s).replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+const clamp=(x,a,b)=>Math.max(a,Math.min(b,x));
+const pick=a=>a[Math.floor(Math.random()*a.length)];
+const LIMIT=90;
+
+let GAME="",GENRE="",GKEY="",CAP="",ILL="",ILLP="",SCENES=[],INTRO=[];
+const D="開発者";
+const PACKS=[
+ {g:"fantasy",title:"ポンコツ勇者と最後のセーブポイント",il:["消エ野カスミ", "剣と勇者を描かせたら右に出る者なし。ただしアカウントごと消える"],genre:"コメディRPG風アドベンチャー",cap:"深夜2時・開発室",
+  intro:[[D,"ふぅ〜 とりあえず作り終わったぞ…","build"],[D,"さて、イラスト提出されてるかな（ポチポチ）","check"],["","このアカウントは存在しません","nf"],[D,"くぁwせdrftgyふじこlp","nf",1],[D,"！？！？！？！？！？","nf",1],
+   [D,"そ、そんなぁ…こんなクソイラストで作り上げるわけにはいかないし…","kari"],["","・・・セリフはある、けどイラストが間に合わない！！！！","empty"],["","あなたがイラストを描く番・・・・","empty"],["","AIが、あなたの絵を評価して、世間の声を作るよ。","empty"]],
+  scenes:[["タイトル画面","タイトル画面のキービジュアル（丘の上から世界を見下ろす勇者）",["","世界から、セーブポイントが消えた。"],["","やり直しのきかない世界で、ひとりの勇者が立ち上がる——"]],
+   ["主人公","主人公・勇者ポン太の立ち絵",["ポン太","オレが勇者ポン太！ 剣は昨日なくした！"],["ポン太","でも大丈夫。気合いはセーブ不要だからな！"]],
+   ["相棒","相棒の小さなドラゴン・モチ",["モチ","きゅい！"],["","（訳：この人についていって大丈夫かな…）"]],
+   ["ラスボス","ラスボス・魔王デッドライン",["魔王デッドライン","我こそは締切を司る者、魔王デッドライン…"],["魔王デッドライン","貴様の冒険、納期は“今日”だ！"]],
+   ["エンディング","感動のエンディング（朝日と仲間たち）",["","こうして、世界にセーブポイントが戻った。"],["ポン太","……とりあえず、セーブしとこ。"]]]},
+ {g:"love",title:"隣の席のきみは宇宙人かもしれない",kari:"alien",il:["風来ボウ子", "制服と夕焼けの第一人者。締切が近づくと旅に出る"],genre:"学園ラブコメ・アドベンチャー",cap:"放課後・誰もいない部室",
+  intro:[[D,"よし、シナリオ全ルート書き終えた！ 我ながら甘酸っぱい！","build"],[D,"イラストレーターさんからメッセージ来てる。納品かな？","check"],["","「旅に出ます。探さないでください。」",["新着メッセージ（1件）","","旅に出ます。","探さないでください。","","—— 送信元：成田空港"]],
+   [D,"探すよ！？ 全力で探すよ！？","same",1],[D,"ヒロインの立ち絵が、ぼくの描いた棒人間のままなんだけど…","kari"],["","恋は待ってくれない。発売日も待ってくれない。","empty"],["","というわけで、あなたがヒロインを描いてください。","empty"],["","絵はAIが見て、発売後の世間の反応まで作ります。","empty"]],
+  scenes:[["タイトル画面","タイトル画面（桜の校門と、並んで歩くふたり）",["","春。となりの席に、転校生が来た。"],["","彼女の頭には、どう見てもアンテナが生えていた。"]],
+   ["ヒロイン","ヒロイン・星野ソラ（頭にアンテナ）",["ソラ","はじめまして。地球の学校は、はじめてです。"],["ソラ","……いまのは、言い間違いです。忘れてください。"]],
+   ["ライバル","風紀委員長・鬼瓦さん（アンテナを校則違反だと思っている）",["鬼瓦","星野さん。その頭の装飾品、校則第12条違反よ。"],["鬼瓦","……取れないの？ え、生えてるの？"]],
+   ["事件","屋上に降りてくるUFO（お迎え）",["","文化祭の夜、屋上に光が降りてきた。"],["ソラ","ごめん。門限、今日までだったみたい。"]],
+   ["エンディング","夕焼けの屋上で向かい合うふたり",["ソラ","帰るの、やめた。地球の購買のパン、まだ全部食べてないし。"],["","それが彼女なりの告白だと気づくのは、もう少し先の話。"]]]},
+ {g:"horror",title:"午前2時のコインランドリー",il:["闇ノ黒助", "ホラー専門。使う色は黒、たまに濃い黒"],genre:"ゆるめのホラー・アドベンチャー",cap:"午前2時・開発室（電気が1本切れている）",
+  intro:[[D,"……できた。怖い。自分で書いて自分で怖い。","build"],[D,"イラスト、届いてるな。5枚ぜんぶある。よかった…","check"],["","（ファイルを開いた）",["haikei_01.png …… 真っ黒","shujinkou.png …… 真っ黒","kaii.png …… 真っ黒","","メモ：「闇を表現しました」"]],
+   [D,"闇すぎるわ！！ 何も見えないのよ！！","same",1],[D,"返信もない…既読もつかない…これがいちばんホラーだよ…","empty"],["","暗闇に絵を灯せるのは、もうあなたしかいない。","empty"],["","描いた絵はAIが講評し、プレイヤーたちの声も作ります。","empty"]],
+  scenes:[["タイトル画面","タイトル画面（深夜、1軒だけ明かりのついたコインランドリー）",["","午前2時。乾燥機が、だれもいないのに回っている。"],["","帰ればよかった。洗濯物なんて、明日でよかった。"]],
+   ["主人公","主人公・残業帰りの会社員（洗濯カゴを抱えている）",["会社員","くつ下がね、もう1足もないんですよ。"],["会社員","だから今日洗うしかないんです。たとえ何が出ても。"]],
+   ["異変","回る洗濯機の窓から、こちらを見ている“何か”",["","ぐるん、ぐるん。窓の向こうで、目が合った。"],["会社員","……柔軟剤、入れすぎたかな。"]],
+   ["怪異","怪異・洗濯物おばけ（シーツの集合体）",["洗濯物おばけ","た〜た〜ん〜で〜〜……"],["洗濯物おばけ","た〜た〜ん〜で〜か〜ら〜か〜え〜れ〜〜……"]],
+   ["エンディング","朝日の中、きれいにたたまれたタオルの山",["","ぜんぶたたみ終えたころ、夜が明けた。"],["会社員","……また来週も来ます。"]]]},
+ {g:"mystery",title:"名探偵は猫である",kari:"cat",il:["猫田ねこ美", "動物イラストの人気作家。猫を飼ってから仕事が進まない"],genre:"ミステリー・アドベンチャー",cap:"締切前夜・開発室",
+  intro:[[D,"トリックも伏線も完璧。あとはイラストを入れるだけだ。","build"],[D,"おっ、納品フォルダに5枚入ってる！ さすがプロ！","check"],["","（開いてみた）",["neko_1.jpg …… 猫の写真","neko_2.jpg …… 猫の写真","neko_3.jpg …… 猫の写真（かわいい）","","メモ：「うちの子です。描く時間はありませんでした」"]],
+   [D,"かわいい！！ かわいいけど！！ 違う！！","same",1],[D,"写真をそのまま使うわけにもいかないし…","kari"],["","この事件を解決できるのは、あなたのペンだけです。","empty"],["","完成した絵はAIが鑑定し、世間の声をお届けします。","empty"]],
+  scenes:[["タイトル画面","タイトル画面（古い洋館と、窓辺の猫のシルエット）",["","この屋敷で、ひとつの事件が起きた。"],["","そして探偵は、いつも通り寝ていた。"]],
+   ["探偵","名探偵・ミケランジェロ警部（三毛猫、虫めがね持ち）",["ミケランジェロ","にゃあ。"],["","（訳：犯人はこの中にいる。だがまず、ごはんだ）"]],
+   ["助手","助手の新米刑事（猫の言葉がわからない）",["新米刑事","警部！ 今のは『犯人がわかった』のにゃあですか！"],["新米刑事","それとも『おなかすいた』のにゃあですか！"]],
+   ["事件現場","事件現場（空っぽになった高級かつおぶしの箱）",["","最高級かつおぶしが、箱ごと消えていた。"],["","床には、肉球の跡。……探偵のものと、よく似ていた。"]],
+   ["エンディング","縁側で丸くなって眠る探偵",["新米刑事","結局、犯人は誰だったんですか、警部…。"],["ミケランジェロ","……にゃ。（訳：時効だ）"]]]},
+ {g:"work",title:"宇宙コンビニ 銀河店",il:["明日野ヤル夫", "メカとロボの達人。口ぐせは「来年の今日ですよね？」"],genre:"SFお仕事コメディ・アドベンチャー",cap:"発売日当日・開発室",
+  intro:[[D,"ついに今日が発売日！ イラストを組み込んで完成だ！","build"],[D,"イラストレーターさんに確認の連絡を…","check"],["","「え？ 締切って来年の今日ですよね？」",["チャット","","自分：本日納品ですよね？","相手：え？","相手：来年の今日ですよね？","相手：いまラフの構想の構想を練ってます"]],
+   [D,"1年！！ 光の速さでも間に合わない！！","same",1],[D,"宇宙より先に、ぼくの頭が真っ白だ…","empty"],["","緊急ワープ。ペンは、あなたに託された。","empty"],["","描いた絵はAI店長が査定し、銀河じゅうの口コミを集めます。","empty"]],
+  scenes:[["タイトル画面","タイトル画面（宇宙空間にぽつんと浮かぶコンビニ）",["","太陽系のはずれ、土星の輪のちょっと先。"],["","そのコンビニは、24時間（地球時間）営業している。"]],
+   ["店長","店長ロボ・テンチョーMk-II（エプロン着用）",["テンチョー","イラッシャイマセ。ポイントカードハ オ持チデスカ。"],["テンチョー","銀河共通ポイント、現在10億倍デー デス。"]],
+   ["常連客","常連の宇宙人（目が3つ、毎日おでんを買う）",["常連客","いつもの。だいこん、たまご、あと未知の物質。"],["テンチョー","未知ノ物質ハ 品切レ デス。"]],
+   ["トラブル","ブラックホール級クレーマー（店ごと吸いこみそう）",["クレーマー","あたためた弁当が、事象の地平線のむこうで冷めたんだが？"],["テンチョー","返品ハ レシートト 弁当ノ 脱出ガ 必要デス。"]],
+   ["エンディング","店の前で地球の出を眺める店長と常連客",["常連客","きれいだな、あの青い星。"],["テンチョー","アソコニモ 出店予定 デス。"]]]},
+ {g:"fantasy",title:"おにぎり戦記",kari:"onigiri",il:["未保存ノゾミ", "食べものイラストの名手。保存ボタンを押した記憶がない"],genre:"食べものファンタジー・アドベンチャー",cap:"昼どき・開発室（空腹）",
+  intro:[[D,"完成〜！ 作ってたら腹へったな…","build"],[D,"イラストのデータ、もらってたはず。開くぞ。","check"],["","ファイルが破損しています",["onigiri_final.psd …… 開けません","onigiri_final_FINAL.psd …… 開けません","onigiri_honto_ni_final2.psd …… 0バイト","","再送のお願い → 宛先不明で戻ってきました"]],
+   [D,"ファイナルが3つあって全部ダメってどういうこと！？","same",1],[D,"具のないおにぎり…いや、絵のないゲームだ…","kari"],["","にぎるのはあなた。ペンを。","empty"],["","できあがった絵はAIが味見して、世間の感想をにぎります。","empty"]],
+  scenes:[["タイトル画面","タイトル画面（白い米粒の大地に立つ、1個のおにぎり）",["","むかしむかし、お弁当箱は平和だった。"],["","パン帝国が攻めてくるまでは。"]],
+   ["主人公","主人公・塩むすびのムスビ（具なし、のり1枚）",["ムスビ","ぼくには具がない。でも、塩気と根性がある！"],["ムスビ","……あと、のりも1枚ある！"]],
+   ["仲間","仲間・たくあん忍者（黄色い、すばやい）",["たくあん忍者","拙者、名わき役にござる。ポリポリ。"],["たくあん忍者","主役の座は狙わぬ。だが弁当の隅は譲らぬ。"]],
+   ["宿敵","宿敵・パン帝国のクロワッサン将軍（層が厚い）",["クロワッサン将軍","フッ、米など古い。時代はバターだ。"],["クロワッサン将軍","わが軍の層の厚さ、思い知るがいい！（サクッ）"]],
+   ["エンディング","ひとつのお弁当箱に仲良くおさまる全員",["","戦いは終わり、みんな同じ弁当箱におさまった。"],["ムスビ","……サンドイッチの隣、意外と落ち着くな。"]]]},
+ {g:"work",title:"侍、リモートワーク始めました",kari:"samurai",il:["既読院スルー斎", "時代劇絵巻の大家。文（ふみ）は読むが返さぬ流派"],genre:"時代劇お仕事コメディ・アドベンチャー",cap:"丑三つ時・開発室",
+  intro:[[D,"うむ、脚本は書き上がった。あっぱれ、自分。","build"],[D,"絵師どのへの文（ふみ）、返事は来ておるかな。","check"],["","既読",["送信：3週間前","「進捗いかがでしょうか」 既読","「お元気ですか」 既読","「せめてスタンプだけでも」 既読","「……」 既読"]],
+   [D,"読んではいる！！ 読んではいるのに！！","same",1],[D,"かくなる上は…拙者の描いた棒人間で出陣か…？","kari"],["","否。筆を取るのは、そなたじゃ。","empty"],["","描いた絵はAI目付役が吟味し、世の評判をしたためまする。","empty"]],
+  scenes:[["タイトル画面","タイトル画面（お城の天守閣と、畳の上のノートパソコン）",["","時は令和っぽい江戸。城にも通信回線が引かれた。"],["","そして侍は、家から出なくなった。"]],
+   ["主人公","主人公・在宅侍 畳之介（上は裃、下はジャージ）",["畳之介","本日も在宅にて候。画面に映るのは上半身のみゆえ。"],["畳之介","下は……聞かぬが武士の情けでござる。"]],
+   ["上司","Web会議の画面に映る殿様（ミュートに気づいていない）",["殿","（口だけ動いている）"],["畳之介","殿、みゅーとでござる。殿、みゅーとでござる！"]],
+   ["強敵","妖怪・カイセンオチ（回線を食べる）",["カイセンオチ","ぐるぐるぐる……せつぞくちゅう……"],["畳之介","おのれ、大事な評定の最中に！ 刀では斬れぬ！"]],
+   ["エンディング","桜の下、定時で仕事を終えてくつろぐ侍",["","妖怪は、ルーターの再起動であっさり消えた。"],["畳之介","本日はこれにて。……定時でござる。"]]]},
+ {g:"fantasy",title:"ドラゴン不動産",il:["金子モラ江", "ドラゴンのうろこ描写に定評。請求書の作成はもっと速い"],genre:"ファンタジー日常・アドベンチャー",cap:"月末・開発室",
+  intro:[[D,"できた！ ほのぼの不動産ファンタジー、完成！","build"],[D,"イラストレーターさんから何か届いてる。待ってました！","check"],["","請求書（1通）",["【ご請求書】","イラスト制作費　5点","構想費・気持ち代　一式","","納品物：なし"]],
+   [D,"請求書だけ来た！！ 絵は！？ 絵はどこ！？","same",1],[D,"払うものも払えないし、載せるものも載せられない…","empty"],["","空き物件ならぬ、空きイラスト5点。入居者（絵）募集中。","empty"],["","あなたが描いてください。","empty"],["","絵はAI査定士が見て、世間の口コミまでご案内します。","empty"]],
+  scenes:[["タイトル画面","タイトル画面（商店街の小さな不動産屋、店番はドラゴン）",["","その不動産屋は、店主がちょっと大きい。"],["","あと、たまに火をふく。"]],
+   ["店主","店主・ドラゴンのヤドリ（メガネ、ネクタイ）",["ヤドリ","いらっしゃい。どんなお住まいをお探しで？"],["ヤドリ","洞窟から塔まで、幅広く取りそろえておりますよ。"]],
+   ["お客さん","お客さん・家を探すスライム（予算は金貨3枚）",["スライム","あの…日当たりは悪いほうがよくて…。"],["スライム","じめじめしてるほど、うれしいです…。"]],
+   ["おすすめ物件","おすすめ物件・火山の中の1LDK（床暖房つき）",["ヤドリ","こちら、全室床暖房。というか床が溶岩です。"],["スライム","……蒸発しちゃいます。"]],
+   ["エンディング","井戸の底の新居で、引っ越しそばを食べるふたり",["","けっきょく、古井戸の底に決まった。"],["スライム","じめじめで最高です。ヤドリさん、ありがとう。"]]]},
+ {g:"heart",title:"全力！まくら投げ甲子園",il:["鋼鉄ロボ之進", "熱血スポーツ…ではなく巨大ロボしか描かない"],genre:"熱血スポーツ・アドベンチャー",cap:"合宿所・消灯後",
+  intro:[[D,"熱い…！ 自分で書いてて泣いた…！ 完成だ！","build"],[D,"イラスト届いてる！ よーし、開封！","check"],["","（開いてみた）",["01.png …… 巨大ロボ","02.png …… 巨大ロボ（別角度）","03.png …… 合体シーン","","メモ：「ロボ5点、納品します！」"]],
+   [D,"ロボ！？ これ、まくら投げのゲームなんですけど！？","same",1],[D,"別の案件と間違えてる…向こうにはまくらが届いてるのか…？","empty"],["","試合開始まで時間がない。代打は、あなた。","empty"],["","絵はAI審判が判定し、観客席の声をお届けします。","empty"]],
+  scenes:[["タイトル画面","タイトル画面（体育館いっぱいに舞う、無数のまくら）",["","夏。全国の修学旅行生が、ひとつの頂点をめざす。"],["","消灯時間までの、短くて熱い戦いが始まる。"]],
+   ["主人公","主人公・エースの枕田（そばがら枕の使い手）",["枕田","オレの球……いや、まくらは重いぜ。"],["枕田","そばがらだからな！"]],
+   ["コーチ","鬼コーチ（ジャージ姿、でもナイトキャップ）",["鬼コーチ","いいか！ まくらは投げるものじゃない！"],["鬼コーチ","……寝るものだ！ だが今夜だけは投げろ！"]],
+   ["ライバル","ライバル校の必殺技「羽毛トルネード」",["ライバル","くらえ！ 最高級ダウン100％の嵐を！"],["枕田","ふ、ふかふかだ……ねむ……い……"]],
+   ["エンディング","優勝旗の下で、全員ぐっすり眠っている",["","決勝戦は、両校全員の寝落ちにより引き分けとなった。"],["","先生が、そっと電気を消した。"]]]},
+ {g:"heart",title:"ペンギン、南へ行く（もう南にいる）",il:["白鳥ましろ", "やさしい水彩の動物画家。依頼が届いていないので何も知らない"],genre:"ほのぼのロードムービー・アドベンチャー",cap:"明け方・開発室",
+  intro:[[D,"静かで、やさしくて、いい話になったなあ…。","build"],[D,"そういえばイラスト、まだ届かないな。催促してみるか。","check"],["","下書き（1件）",["メール ＞ 下書き","","件名：イラスト制作のご依頼","保存日：3か月前","状態：未送信"]],
+   [D,"……送ってない。","empty"],[D,"そもそも頼んでなかった！！ 3か月、誰のことも待ってなかった！！","same",1],["","イラストレーターは飛んでいない。最初から、いなかった。","empty"],["","だから、あなたが描きます。","empty"],["","絵はAIがあたたかく（たぶん）見守り、世間の声を集めます。","empty"]],
+  scenes:[["タイトル画面","タイトル画面（どこまでも白い氷原と、小さなペンギンのうしろ姿）",["","そのペンギンは、南をめざしていた。"],["","ここが南極だとは、まだ知らない。"]],
+   ["主人公","主人公・ペンギンのコオリ（小さなリュック）",["コオリ","南には、あったかい楽園があるらしいんだ。"],["コオリ","ぼく、寒いのちょっと苦手でさ。"]],
+   ["旅の仲間","旅の仲間・迷子のアザラシ（方向音痴）",["アザラシ","南？ 知ってる知ってる。たぶん、あっち。"],["","（そう言って、海のほうを指した）"]],
+   ["難所","オーロラの下の、大きな氷の裂け目",["","行く手に、大きな裂け目が口をあけていた。"],["コオリ","空がきれいだと、こわいのを少し忘れるね。"]],
+   ["エンディング","「ここが南」と書かれた看板の前に立つふたり",["コオリ","……ずっと、南にいたんだ。"],["アザラシ","じゃあ、もう着いてたってことだね。おめでとう。"]]]}
+ ,{g:"love",title:"購買のパンは恋より早く売り切れる",il:["春野こいし", "ラブコメ一筋10年。自分が恋をすると手が止まる"],genre:"学園ラブコメ・アドベンチャー",cap:"昼休み直前・開発室",
+  intro:[[D,"青春だ…！ 書いてるだけで腹がへる青春だ…！ 完成！","build"],[D,"イラストレーターさんから返信きてる。","check"],["","「恋をしたので、描けません。」",["新着メッセージ","","恋をしました。","手につきません。ペンも。","","—— 追伸：相手はパン屋さんです"]],
+   [D,"おめでとう！！ でも描いて！！","same",1],[D,"人の恋を応援しつつ、自分のゲームの恋が白紙…","empty"],["","恋もパンも、早い者勝ち。あなたが描いてください。","empty"],["","絵はAIが講評して、発売後のみんなの声も作ります。","empty"]],
+  scenes:[["タイトル画面","タイトル画面（昼休み、購買に押し寄せる生徒たち）",["","チャイムが鳴る。それは、戦いの合図。"],["","この学校では、やきそばパンは3分で売り切れる。"]],
+   ["主人公","主人公・パン争奪戦のエース 小麦（こむぎ）",["小麦","廊下は走らない。早歩きの限界を攻めるの。"],["小麦","今日こそ、やきそばパンを手に入れる！"]],
+   ["気になる人","購買でバイトしている先輩（エプロン姿）",["先輩","あ、今日も来たね。いつも4番目なんだよなあ、きみ。"],["小麦","（数えられてた…！）"]],
+   ["運命の瞬間","最後の1個のやきそばパンに、同時にふれる手と手",["","最後の1個に、手がふたつ重なった。"],["小麦","あ……。　　先輩「あ……」"]],
+   ["エンディング","中庭のベンチで、パンを半分こするふたり",["先輩","半分こ、する？"],["","その日のやきそばパンは、いつもの半分なのに、いちばんおいしかった。"]]]}
+ ,{g:"love",title:"図書室の返却期限は恋のしめきり",il:["言ノ葉つむぎ", "繊細な線が持ち味。最近は絵より詩にはまっている"],genre:"学園恋愛・アドベンチャー",cap:"夕方・開発室（西日がまぶしい）",
+  intro:[[D,"静かな恋の話、書けた…。われながら良い。","build"],[D,"納品フォルダに5つ入ってる。どれどれ。","check"],["","（開いてみた）",["01.txt …… 詩","02.txt …… 詩","03.txt …… 詩（長い）","","メモ：「絵より言葉で届けたくなりました」"]],
+   [D,"ポエム！！ 全部ポエム！！ うまいのが腹立つ！！","same",1],[D,"言葉はもう足りてるんだよ…足りないのは絵なんだよ…","empty"],["","返却期限は今日。あなたの絵で、物語を閉じてください。","empty"],["","描いた絵はAIが読みとき、世間の感想をお届けします。","empty"]],
+  scenes:[["タイトル画面","タイトル画面（夕方の図書室、本棚ごしに目が合うふたり）",["","放課後の図書室は、ページをめくる音しかしない。"],["","だから、心臓の音が聞こえないか心配だった。"]],
+   ["ヒロイン","図書委員の栞（しおり）、カウンターの中",["栞","返却期限は2週間です。……延長もできますけど。"],["栞","（毎日来てくれるなら、延長しないでほしいな）"]],
+   ["相手役","毎日同じ本を借りにくる男子",["彼","これ、また借ります。"],["栞","もう8回目ですよ。そんなにおもしろいんですか？"]],
+   ["手紙","本にはさまれていた、小さな手紙",["","返ってきた本に、しおりが1枚はさまっていた。"],["","『この本が好きなんじゃなくて、ここに来る理由がほしかった』"]],
+   ["エンディング","貸出カードに上下に並んだ、ふたりの名前",["栞","……返事は、次の本にはさんでおきます。"],["","返却期限は、2週間後。"]]]}
+ ,{g:"horror",title:"エレベーターは13階に止まらない",il:["丑三ツ時子", "怪異デザインの鬼才。連絡がつくのは午前4時44分だけ"],genre:"ゆるめのホラー・アドベンチャー",cap:"午前4時44分・開発室",
+  intro:[[D,"よし…書き終えた…。うしろは見ないぞ…。","build"],[D,"あ、イラストレーターさんからメール。こんな時間に？","check"],["","受信 4:44",["受信時刻：4:44","件名：（なし）","添付：（なし）","","本文：「うしろ」"]],
+   [D,"ひっ………！！","same",1],[D,"（ふりむくと、壁に「締切 今日」と書いたふせんが貼ってあった）","empty"],[D,"そっちのうしろ！？ いや絵は！？ 絵はどこ！？","empty",1],["","だれも描かないなら、あなたが描くしかない。","empty"],["","絵はAIが（こわごわ）見て、世間の声を集めます。","empty"]],
+  scenes:[["タイトル画面","タイトル画面（古いマンションの、うす暗いエレベーター）",["","このマンションには、13階がない。"],["","ボタンは12のつぎが、14になっている。"]],
+   ["主人公","主人公・引っ越してきたばかりの大学生（段ボール持ち）",["大学生","家賃が相場の半分なんですよ、ここ。"],["大学生","理由は聞かなかったです。聞いたら負けな気がして。"]],
+   ["異変","階数表示に出るはずのない「13」が光っている",["","12……と、14のあいだで、エレベーターが止まった。"],["","表示には、ないはずの数字が灯っていた。"]],
+   ["怪異","13階の住人・ものすごく親切な幽霊の大家さん",["大家さん","あら〜新しい方？ ゴミの日は火曜と金曜ですからね〜"],["大家さん","あと、わたしは見えてないことにしてね〜"]],
+   ["エンディング","13階の部屋で、幽霊と引っ越しそばを食べる",["大学生","……そば、のびないんですね。"],["大家さん","時間が止まってるからね〜。家賃も止まってるのよ〜"]]]}
+ ,{g:"horror",title:"祖母の家の、開かずの冷蔵庫",il:["締切コワ井", "和風ホラーの旗手。この世でいちばん怖いものは締切"],genre:"夏のホラー・アドベンチャー",cap:"真夏の夜・開発室（エアコン故障中）",
+  intro:[[D,"あつい…こわい…あつい…。でも完成した…。","build"],[D,"イラスト届いてる。ファイル名を見てみよう。","check"],["","（ファイル一覧）",["たすけて.png","たすけて2.png","たすけて_最終.png","","中身：「締切から」と書かれた画像"]],
+   [D,"助けてほしいのはこっちだよ！！","same",1],[D,"絵がない…冷蔵庫の中より空っぽだ…","empty"],["","この扉を開けられるのは、あなたのペンだけ。","empty"],["","描いた絵はAIが見て、世間のひんやりした声を作ります。","empty"]],
+  scenes:[["タイトル画面","タイトル画面（田舎の古い台所と、大きな古い冷蔵庫）",["","おばあちゃんの家には、開けてはいけない冷蔵庫がある。"],["","「2段目はね、見ちゃだめだよ」"]],
+   ["主人公","主人公・夏休みに遊びに来た孫（麦わら帽子）",["孫","だめって言われると、見たくなるよね。"],["孫","アイスが入ってるだけかもしれないし。"]],
+   ["異変","真夜中、ひとりでに開いて光っている冷蔵庫",["","夜中の2時。台所から、ぶぅん、と音がした。"],["","冷蔵庫の扉が、少しだけ開いていた。"]],
+   ["怪異","10年もののぬか床の主（ぬかまみれ）",["ぬか床の主","ま〜ぜ〜ろ〜……まいにち〜ま〜ぜ〜ろ〜……"],["孫","……くさい。こわいより先に、くさい。"]],
+   ["エンディング","朝の食卓、みんなで漬物の朝ごはん",["おばあちゃん","あら、混ぜてくれたの。えらいねえ。"],["","その日のきゅうりは、10年でいちばんの出来だった。"]]]}
+ ,{g:"mystery",title:"消えたプリンと5人の容疑者",il:["積ミゲー崩し丸", "ほのぼの家族絵が得意。積んだゲームを崩すのに忙しい"],genre:"ご家庭ミステリー・アドベンチャー",cap:"日曜の夜・開発室",
+  intro:[[D,"家庭内ミステリー、完成！ 真相は我ながら意外！","build"],[D,"イラストレーターさんからメールだ。","check"],["","件名：自白します",["件名：自白します","","犯人は私です。","描いていません。1枚も。","","動機：ゲームをしていました"]],
+   [D,"潔い！！ 潔いけど許さない！！","same",1],[D,"事件は解決したのに、絵だけが迷宮入り…","empty"],["","真相を描けるのは、あなただけです。","empty"],["","絵はAI鑑識が調べ、世間の推理（感想）を集めます。","empty"]],
+  scenes:[["タイトル画面","タイトル画面（冷蔵庫の中の、空っぽの皿とスプーン）",["","日曜の午後3時。冷蔵庫のプリンが消えた。"],["","容器には名前が書いてあった。大きく、マジックで。"]],
+   ["探偵","探偵・小学5年生の妹（腕組み、名探偵の帽子）",["妹","この中に、わたしのプリンを食べた人がいます。"],["妹","全員、リビングから出ないでください。"]],
+   ["容疑者たち","横一列に並ぶ家族（父・母・兄・祖父・犬）",["兄","おれじゃないって。おれは昨日のを食べた。"],["妹","昨日のも わたしのだったんだけど。"]],
+   ["決定的証拠","父の口元に光る、カラメルソース",["妹","お父さん。そのヒゲについてる茶色いの、何？"],["父","…………コーヒーだ。"]],
+   ["エンディング","コンビニ袋いっぱいのプリンを持って帰ってくる父",["父","……6個買ってきた。全員ぶんだ。"],["妹","示談成立です。"]]]}
+ ,{g:"mystery",title:"豪華客船ゆうなぎ号の暗号",il:["鍵山ロック", "緻密な背景美術で有名。あらゆるファイルに鍵をかける"],genre:"船上ミステリー・アドベンチャー",cap:"嵐の夜・開発室",
+  intro:[[D,"暗号トリック、会心の出来！ あとは絵を入れるだけ！","build"],[D,"納品ファイル、ちゃんと届いてるぞ。開こう。","check"],["","パスワードを入力してください",["illust_all.zip 🔒","","パスワードを入力してください","ヒント：「私の好きな食べ物」","","（のこり 0 回）"]],
+   [D,"知らないよ！！ 好きな食べ物の話、したことないよ！！","same",1],[D,"暗号ものを作ってて、暗号に負けるとは…","empty"],["","解けないなら、描けばいい。あなたが。","empty"],["","絵はAIが解読して、世間の声をお届けします。","empty"]],
+  scenes:[["タイトル画面","タイトル画面（夜の海を進む、明かりのともった豪華客船）",["","豪華客船ゆうなぎ号。乗客300名、探偵1名。"],["","その探偵は、出航5分で船酔いしていた。"]],
+   ["探偵","船酔いで青い顔の名探偵（手すりにつかまっている）",["探偵","謎は…すべて…うっぷ…解けた……"],["探偵","……いや、まだだ。まず酔い止めをくれ。"]],
+   ["依頼人","依頼人・謎めいた老婦人（大きな帽子、扇子）",["老婦人","船長室に、奇妙な暗号が残されていましたの。"],["老婦人","きっと、恐ろしい計画の合図ですわ。"]],
+   ["暗号","船長室の机に残された、暗号の紙きれ",["","紙には『タマ10・ギュウ2・コ1・サ少』と書かれていた。"],["探偵","タマ…ギュウ…これは…まさか……"]],
+   ["エンディング","朝焼けのデッキで、巨大なプリンを囲む乗客たち",["船長","それ、プリンの買い物メモです。たまご、牛乳、粉、砂糖。"],["","事件は、朝食のデザートとして解決した。"]]]}
+ ,{g:"work",title:"魔王城コールセンター",il:["小麦田こね太", "魔物デザインの元・売れっ子。現在はパン職人"],genre:"ファンタジーお仕事コメディ・アドベンチャー",cap:"月曜の朝・開発室",
+  intro:[[D,"お仕事もの、書き上げた！ はたらく魔物に幸あれ！","build"],[D,"イラストレーターさんにメールして、と。","check"],["","自動返信",["【自動返信】","","このたび転職いたしました。","現在はパン職人をしております。","イラストのご依頼は承っておりません。"]],
+   [D,"いつの間に！？ 引き継ぎは！？ 引き継ぎは！？","same",1],[D,"電話はつながらない。絵もない。あるのは納期だけ。","empty"],["","ただいま、イラスト担当はあなたにおつなぎしております。","empty"],["","描いた絵はAIが応対品質をチェックし、お客様の声を作ります。","empty"]],
+  scenes:[["タイトル画面","タイトル画面（魔王城の一室に、ずらりと並ぶ電話と魔物たち）",["","魔王城・お客様相談室。受付時間は、日没から夜明けまで。"],["","本日も、勇者さまからのお電話が鳴りやまない。"]],
+   ["主人公","新人オペレーターのゴブリン（ヘッドセット着用）",["ゴブリン","お電話ありがとうございます、魔王城でございます！"],["ゴブリン","……研修で習った通りに言えた！"]],
+   ["上司","スケルトン課長（シフト表を持っている、骨）",["スケルトン課長","休憩は15分。骨休めも15分だ。"],["スケルトン課長","わたしは休んでも休まなくても骨だがね。カタカタ。"]],
+   ["クレーム","電話口で怒っている勇者（宝箱が空だった）",["勇者","3階の宝箱、空だったんですけど！ 2時間かけたのに！"],["ゴブリン","申し訳ございません、補充係が有給でして……"]],
+   ["エンディング","夜明け、タイムカードを押して帰る魔物たち",["","夜が明ける。魔物たちの、退勤の時間だ。"],["ゴブリン","おつかれさまでした！ ……明日も、がんばれそう。"]]]}
+ ,{g:"heart",title:"おばあちゃんとロボ掃除機の夏",il:["極小ドット子", "ドット絵職人。年々キャンバスが小さくなっている"],genre:"ほのぼの日常・アドベンチャー",cap:"夏の午後・開発室（麦茶あり）",
+  intro:[[D,"いい話だ…。風鈴の音が聞こえてくるようだ…。完成。","build"],[D,"イラストも届いてる。5枚、ばっちり。","check"],["","（開いてみた）",["01.png …… 16×16ピクセル","02.png …… 16×16ピクセル","03.png …… 8×8ピクセル","","メモ：「容量を節約しました」"]],
+   [D,"節約しすぎ！！ 点！！ これは点！！","same",1],[D,"拡大したら、四角が4つ見えた。たぶん、おばあちゃん。","empty"],["","もう少し大きな絵を、あなたにお願いします。","empty"],["","絵はAIがのんびり眺めて、世間の声を集めます。","empty"]],
+  scenes:[["タイトル画面","タイトル画面（縁側と風鈴、畳の上のロボ掃除機）",["","その夏、ウメさんの家に、丸いお客がやってきた。"],["","孫が送ってきた、ロボット掃除機である。"]],
+   ["おばあちゃん","ウメさん（割烹着、うちわを持っている）",["ウメ","ひとりで動くのかい。えらいねえ。"],["ウメ","名前がいるね。丸いから、まるお。"]],
+   ["ロボ掃除機","ロボ掃除機のまるお（頭に手ぬぐいをのせられている）",["まるお","ピポ。（掃除ヲ開始シマス）"],["ウメ","暑いからね、これかぶっときな。"]],
+   ["大冒険","縁側の段差から落ちて、庭を進んでいくまるお",["","まるおは、段差を知らなかった。"],["","ひまわりの根元で、ピポ、とひと声鳴いた。"]],
+   ["エンディング","夕暮れの縁側、スイカを食べるウメさんと、種を吸うまるお",["ウメ","種はそこに飛ばすから、頼んだよ、まるお。"],["まるお","ピポ。（了解シマシタ）"]]]}
+ ,{g:"sf",title:"ロボットは夢でネジをかぞえる",il:["螺子巻キ太郎",""],genre:"やさしいSF・アドベンチャー",cap:"夜明け前・開発室",
+  scenes:[["タイトル画面","タイトル画面（星空の下のスクラップ置き場と、1体の古いロボット）",["","そのロボットは、30年前に電源を切られた。"],["","……はずだったが、今夜、目がひとつ灯った。"]],
+   ["主人公","旧式ロボット・ガタピシ（さびている、片目だけ光る）",["ガタピシ","キドウ……シマシタ。ネジガ 3本 タリマセン。"],["ガタピシ","デモ ウゴキマス。コンジョウ デス。"]],
+   ["相棒","修理屋の少女・ネジ（大きなスパナを背負っている）",["ネジ","うわ、動いた！ ……直していい？ 直させて！"],["ネジ","お代はいらないよ。趣味だから！"]],
+   ["ライバル","ぴかぴかの最新型ロボ・ピカ1号（とても大きい）",["ピカ1号","旧式ハ リサイクル サレルベキ デス。"],["ガタピシ","……ワタシハ マダ、ユメヲ ミテイル トチュウ デス。"]],
+   ["エンディング","朝日の中、並んで歩くロボットと少女",["","ネジは3本、ちゃんと足された。1本は、少女のお守りだった。"],["ガタピシ","キョウハ、イイ テンキ デス。……タブン。"]]]}
+ ,{g:"sf",title:"タイムマシンは月曜日に壊れる",il:["時計塚ズレ子",""],genre:"ドタバタSF・アドベンチャー",cap:"日曜の深夜・開発室",
+  scenes:[["タイトル画面","タイトル画面（渦巻く時計の中を走る、自転車型タイムマシン）",["","月曜日が来なければいい。だれもが一度は思う。"],["","それを本当に作ってしまった高校生がいた。"]],
+   ["主人公","発明家の高校生・トキオ（ゴーグル、寝ぐせ）",["トキオ","日曜の夜を、もう一回やる。それだけでいいんだ。"],["トキオ","宿題？ ……だから戻るんだよ。"]],
+   ["過去の世界","行きすぎて着いてしまった恐竜時代",["","ダイヤルを回しすぎた。日曜どころか、白亜紀だった。"],["トキオ","……宿題は、ないな。ここには。"]],
+   ["謎の人物","止めにきた未来の自分（とても疲れた顔）",["未来のトキオ","やめとけ。日曜を100回やっても、宿題は終わらない。"],["未来のトキオ","経験者が言うんだ。まちがいない。"]],
+   ["エンディング","ふつうの月曜日の教室、机につっぷす主人公",["","タイムマシンは壊れ、月曜日は、ふつうに来た。"],["トキオ","……先生、宿題、恐竜に食べられました。"]]]}
+ ,{g:"sf",title:"宇宙人、町内会に入る",il:["回覧板まわ代",""],genre:"ご近所SF・アドベンチャー",cap:"土曜の朝・開発室",
+  scenes:[["タイトル画面","タイトル画面（回覧板を持った宇宙人と、ふつうの住宅街）",["","3丁目の空き家に、新しい人が越してきた。"],["","人、でいいのかは、だれも聞かなかった。"]],
+   ["主人公","宇宙人のポポさん（手が4本、エプロン姿）",["ポポ","コノホシノ ゴミブンベツ、ムズカシイ デスネ。"],["ポポ","ワタシノ ホシデハ、ゼンブ タベマス。"]],
+   ["町内会長","町内会長のハナエさん（うで組み、パーマ）",["ハナエ","手が4本あるなら、草むしり、2倍はやいわね。"],["ハナエ","来月の当番、入れとくから。"]],
+   ["夏祭り","盆踊りのやぐらにされたUFO（ちょうちん付き）",["","やぐらが足りないと聞いて、ポポさんは乗り物を貸した。"],["ハナエ","光るし回るし、ちょうどいいじゃない！"]],
+   ["エンディング","みんなで花火を見上げる夜",["ポポ","コノホシニ キテ、ヨカッタ デス。"],["ハナエ","じゃ、来年は副会長ね。"]]]}
+ ,{g:"jidai",title:"忍者、目立ちたい",il:["金屏風ピカ丸",""],genre:"時代劇コメディ・アドベンチャー",cap:"丑三つ時・開発室",
+  scenes:[["タイトル画面","タイトル画面（満月を背に、屋根の上でポーズを決める金ピカの忍者）",["","忍びとは、闇に生き、闇に消える者。"],["","……のはずが、ひとりだけ、やたらと光っていた。"]],
+   ["主人公","金ピカ装束の忍者・キラ丸",["キラ丸","拙者の名はキラ丸！ 覚えて帰ってくだされ！"],["キラ丸","さいん も書くでござるよ！"]],
+   ["師匠","影がうすすぎる頭領（ほとんど見えない）",["頭領","……キラ丸よ。"],["キラ丸","わっ！ 頭領、いつからそこに！？　　頭領「朝からじゃ」"]],
+   ["任務","花火を上げながら城に忍びこむキラ丸",["","その夜の潜入は、城下町じゅうが見物した。"],["キラ丸","どーん！ 忍法・打ち上げ花火の術！"]],
+   ["エンディング","祭りの舞台で大人気のキラ丸",["","キラ丸は忍びをクビになり、祭りの花形になった。"],["頭領","……まあ、あれはあれで、天職じゃな。"]]]}
+ ,{g:"jidai",title:"平安貴族は返事がおそい",il:["返歌野おそ子",""],genre:"平安ラブコメ・アドベンチャー",cap:"月の夜・開発室",
+  scenes:[["タイトル画面","タイトル画面（御簾ごしの月と、山のように積まれた文）",["","平安の都。恋は、歌の返事の速さで決まる。"],["","ところがこの姫、返事に三日かかる。"]],
+   ["主人公","返歌に悩む姫君（筆を持ったまま固まっている）",["姫","『月がきれい』……いや、ふつうすぎるかしら。"],["姫","『月が、まるい』……だめ、見たままだわ。"]],
+   ["お相手","毎日歌を送ってくる貴公子（待ちくたびれている）",["貴公子","今日も返事は来ぬか……。"],["貴公子","いや、待つのもまた、雅（みやび）というもの。たぶん。"]],
+   ["文使い","都を全力で走る文使いの少年",["文使い","姫さま、やっと書けたんですか！ 走ります！"],["文使い","三日ぶんの遅れ、足で取りもどします！"]],
+   ["エンディング","ふたりで月を見る縁側",["貴公子","歌は、もうよいのです。会って話せば、すぐでしょう。"],["姫","……それ、三日前に言ってほしかったわ。"]]]}
+ ,{g:"jidai",title:"戦国茶屋のだんご大名",il:["団子山くし蔵",""],genre:"戦国ほのぼの・アドベンチャー",cap:"合戦前夜・開発室",
+  scenes:[["タイトル画面","タイトル画面（峠の茶屋と、風にゆれる『だんご』ののぼり）",["","戦国の世。国ざかいの峠に、一軒の茶屋があった。"],["","東軍も西軍も、ここのだんごには目がなかった。"]],
+   ["主人公","茶屋の看板娘・おくし（おぼんを持っている）",["おくし","いらっしゃい！ みたらし？ あんこ？"],["おくし","刀はそこの傘立てに入れといてね。"]],
+   ["お客","お忍びで来た大名（変装がへた、だんご20本）",["大名","わしはただの旅の者じゃ。だんごを20本たのむ。"],["おくし","お殿さま、家紋、見えてます。"]],
+   ["事件","敵軍の大将と相席になってしまう",["","店がこんでいて、空いているのは向かいの席だけだった。"],["敵将","……そちらの あんこ、ひと串もらえぬか。"]],
+   ["エンディング","両軍がならんでだんごを食べる峠",["","その日の合戦は『だんご休戦』として歴史にのこった。"],["おくし","お会計は、別々で？ いっしょで？"]]]}
+ ,{g:"animal",title:"くまのパン屋は冬にねむる",il:["冬眠田ねむる",""],genre:"どうぶつ絵本・アドベンチャー",cap:"冬の朝・開発室（こたつ）",
+  scenes:[["タイトル画面","タイトル画面（雪の森の、えんとつから煙の出る小さなパン屋）",["","森のおくに、くまのパン屋がありました。"],["","やきたての においは、山のむこうまで とどきます。"]],
+   ["店主","くまのベイカーさん（白いぼうし、粉だらけ）",["ベイカー","おはよう。きょうは くるみパンが うまく やけたよ。"],["ベイカー","……ふわあ。なんだか、ねむいなあ。"]],
+   ["お客さん","早起きのリス（ほっぺがふくらんでいる）",["リス","くるみパン、10こ ください！ ほっぺに入れて かえります！"],["ベイカー","ふくろ、いる……？"]],
+   ["こまったこと","パンをこねながら眠ってしまうベイカーさん",["","雪がふると、くまは ねむくなるのです。"],["","パンきじは、まくらに ちょうどいい やわらかさでした。"]],
+   ["エンディング","春、パン屋の前にできた森のみんなの行列",["","春。えんとつから、ひさしぶりに 煙が のぼりました。"],["ベイカー","おまたせ。ひと冬ぶん、ねかせた パンだよ。"]]]}
+ ,{g:"animal",title:"かえるの合唱団、音痴がひとり",il:["雨宿りケロ美",""],genre:"どうぶつ音楽・アドベンチャー",cap:"梅雨の夜・開発室",
+  scenes:[["タイトル画面","タイトル画面（月のうつる蓮の池と、ならんだかえるたち）",["","はす池の合唱団は、森でいちばんの うたい手たち。"],["","ただし、ひとりを のぞいて。"]],
+   ["主人公","音痴のかえる・ケロ太（大きな口、自信はある）",["ケロ太","ゲ〜〜ロ〜〜〜♪"],["","（まわりの はすの葉が、いちまい しおれた）"]],
+   ["指揮者","きびしいガマ先生（指揮棒、めがね）",["ガマ先生","ケロ太くん。きみは……口だけ うごかして いなさい。"],["ケロ太","えっ、こんなに うまいのに！？"]],
+   ["本番","雨の夜のコンサート、満員の観客",["","本番の夜。雨が やんでしまい、みんなの声が かれてきました。"],["ケロ太","……ぼくが、うたう！"]],
+   ["エンディング","ケロ太の歌で降りだした雨と、よろこぶ森",["","ケロ太の うたに、空が おどろいて、雨が ふりだしました。"],["ガマ先生","……きみは、雨ごい係に 任命だ。"]]]}
+ ,{g:"animal",title:"はりねずみ、ハグがしたい",il:["針山ちくり",""],genre:"どうぶつ友情・アドベンチャー",cap:"秋の夕方・開発室",
+  scenes:[["タイトル画面","タイトル画面（落ち葉の森に、ぽつんといる小さなはりねずみ）",["","はりねずみのチクには、ゆめが ありました。"],["","だれかを、ぎゅっと だきしめる ことです。"]],
+   ["主人公","はりねずみのチク（背中はとげとげ、目はまるい）",["チク","ぼくが ちかづくと、みんな 『いたっ』て いうんだ。"],["チク","わざとじゃ ないんだけどなあ。"]],
+   ["友だち","ふわふわのうさぎ・モコ（チクがちょっとこわい）",["モコ","チクのことは すきだよ。でも、とげは ちょっと……。"],["モコ","ごめんね。ふうせん みたいに われそうで。"]],
+   ["ひらめき","とげの先に、ひとつずつマシュマロをさしたチク",["","チクは ひとばん かけて、とげに マシュマロを さしました。"],["チク","これなら、いたくない！ ……あまい においも する！"]],
+   ["エンディング","マシュマロだらけのチクを、みんなが抱きしめる",["","その日、チクは 森じゅうの みんなに ハグされました。"],["モコ","ふわふわだね。……ひとつ、たべても いい？"]]]}
+ ,{g:"gourmet",title:"深夜ラーメン、替え玉は人生",il:["湯気立のびる",""],genre:"人情グルメ・アドベンチャー",cap:"深夜1時・開発室（空腹）",
+  scenes:[["タイトル画面","タイトル画面（路地裏の屋台、湯気と赤いちょうちん）",["","終電のあと、その屋台は あらわれる。"],["","のれんには、ひとこと。『腹がへったら、すわれ』"]],
+   ["店主","無口な大将（ねじりはちまき、うで組み）",["大将","…………。"],["","（訳：かため・こいめ・おおめ、どれにする）"]],
+   ["お客","終電をのがした新入社員（ネクタイがゆるんでいる）",["新入社員","ぼく、今日、会議で ひとことも しゃべれなくて…。"],["大将","…………替え玉、いるか。"]],
+   ["事件","スープは残り1杯ぶん、お客は3人",["","なべの底が見えた。のこりは、どう見ても1杯ぶん。"],["大将","…………3人で、わけろ。どんぶりは3つ出す。"]],
+   ["エンディング","朝焼けの中、からっぽのどんぶりが3つ",["新入社員","ごちそうさまでした。あした、ひとことだけ しゃべってみます。"],["大将","…………また、こい。"]]]}
+ ,{g:"gourmet",title:"作りすぎたカレーの七日間",il:["鍋底こげ太",""],genre:"自炊グルメ・アドベンチャー",cap:"月末・開発室（財布がうすい）",
+  scenes:[["タイトル画面","タイトル画面（コンロの上の、とても大きななべ）",["","ひとり暮らしで、カレーを10人前つくってしまった。"],["","これは、その七日間の記録である。"]],
+   ["主人公","大なべを前にぼうぜんとする大学生（おたま持ち）",["大学生","ルーの箱に『10皿分』って書いてあったんだ。"],["大学生","半分だけ使う、という発想がなかった。"]],
+   ["助っ人","毎晩食べにくる、となりの部屋の先輩（マイスプーン持参）",["先輩","きのうよりうまくなってるな。カレーは育つんだ。"],["大学生","先輩、もう4日連続ですよ。"]],
+   ["五日目","カレーうどん、カレードリア、カレーパンにすがたを変えたカレーたち",["","五日目。カレーは、かたちを変えて生きのびていた。"],["大学生","うどんも ドリアも パンも、ぜんぶ おまえだったのか…。"]],
+   ["エンディング","ぴかぴかに洗われた、からっぽの大なべ",["","七日目の夜、なべは ついに からになった。"],["大学生","……あした、シチューにしようかな。10皿分で。"]]]}
+ ,{g:"gourmet",title:"おばけレストランは星みっつ",il:["皿洗イ忘レ",""],genre:"おばけグルメ・アドベンチャー",cap:"丑三つ時・開発室",
+  scenes:[["タイトル画面","タイトル画面（森の中の古い洋館レストランと、ゆれる看板）",["","その店は、夜中の12時にだけ ひらく。"],["","予約は いらない。帰れるかどうかは、味しだい。"]],
+   ["料理長","ガイコツの料理長（コック帽、味見はぜんぶこぼれる）",["料理長","うむ、いい味だ。……たぶん。"],["料理長","わたしが味見すると、あばらから ぜんぶ落ちるのでね。カタカタ。"]],
+   ["お客","おなかをすかせた辛口の料理評論家（ナプキン、メモ帳）",["評論家","ふん。こんな森の奥に、まともな料理が あるものか。"],["評論家","……この スープ、とうめいなのに、味がする。"]],
+   ["名物料理","空を飛んで運ばれてくるオムライス",["","ウェイターは、ポルターガイストだった。"],["","オムライスは、いちども ゆれずに、テーブルに着地した。"]],
+   ["エンディング","看板にかがやく星みっつと、手をふるおばけたち",["評論家","星みっつ。……次は、昼にも あけてくれ。"],["料理長","それは無理ですな。われわれ、昼は 寝ておりますので。"]]]}
+ ,{g:"sports",title:"補欠のエースは声がでかい",il:["声出シ響子",""],genre:"熱血野球・アドベンチャー",cap:"試合前夜・開発室",
+  scenes:[["タイトル画面","タイトル画面（夕日のグラウンドと、ベンチにひとり立つ選手）",["","背番号18。3年間、いちども試合に出たことがない。"],["","それでも、チームでいちばん有名な選手だった。"]],
+   ["主人公","万年補欠・大声 響（口が大きくあいている）",["響","ナイスボーーール！！ ナイスボーーーーール！！"],["","（となり町の犬が、いっせいに ほえた）"]],
+   ["監督","サングラスの監督（うで組み、表情がわからない）",["監督","響。おまえの声は、うちの10人目の選手だ。"],["監督","……ただ、耳せんは 自分で買わせてくれ。"]],
+   ["大一番","9回裏ツーアウト、代打でバッターボックスに立つ響",["","9回裏。監督が、はじめて彼の名前を呼んだ。"],["響","いってきまーーーーす！！"]],
+   ["エンディング","空ぶり三振、でもベンチ全員が笑っている",["","結果は、三球三振。けれど、だれも下を向かなかった。"],["響","来年も、応援しまーーーす！！ ……あ、卒業だった。"]]]}
+ ,{g:"sports",title:"カバディ部、部員はふたり",il:["線引キひとり",""],genre:"青春スポーツ・アドベンチャー",cap:"放課後・開発室",
+  scenes:[["タイトル画面","タイトル画面（体育館のすみに、テープで引かれた小さなコート）",["","体育館のすみっこ。バスケ部とバレー部の、あいだの すきま。"],["","そこが、カバディ部の全領土である。"]],
+   ["部長","やる気だけはある部長（はちまき、ポーズだけは強そう）",["部長","カバディカバディカバディカバディ……！"],["部長","……ひとりだと、だれにもタッチできないんだ。"]],
+   ["新入部員","ルールを知らない転校生（きょとんとしている）",["転校生","あの、これって、鬼ごっこですか？"],["部長","ちがう！ ……いや、だいたい合ってる！"]],
+   ["試合","強豪校の7人と向かいあう、たったふたり",["","相手は7人。こちらは、ふたり。"],["部長","だいじょうぶだ。ふたりなら、ひとりの2倍いる。"]],
+   ["エンディング","負けたあと、入部希望者がならぶ体育館のすみ",["","試合は 0対48で負けた。でも、見ていた人が いた。"],["転校生","部長、うしろ。ならんでます。5人も。"]]]}
+ ,{g:"sports",title:"町内運動会、玉入れだけはゆずれない",il:["玉入レ数エ",""],genre:"ご近所スポーツ・アドベンチャー",cap:"運動会の前の晩・開発室",
+  scenes:[["タイトル画面","タイトル画面（万国旗がはためく校庭と、高い玉入れのかご）",["","秋晴れ。年に一度の、町内運動会。"],["","この町には、玉入れに人生をかけた男がいる。"]],
+   ["主人公","玉入れ歴40年のゲンさん（はちまき、ひざにサポーター）",["ゲン","玉はな、投げるんじゃない。かごに帰してやるんだ。"],["ゲン","……ひざは痛いが、うでは まだ いける。"]],
+   ["ライバル","となり町のトメさん（わりばしのような細うで、目がするどい）",["トメ","あら ゲンさん。ことしも 2位を とりにきたの？"],["ゲン","……ことしこそ、その口に 玉を入れてやる。"]],
+   ["最後の一球","同点、のこり1秒、宙にうかぶ最後の玉",["","笛が鳴る直前。赤と白の玉が、同時に 空へ のぼった。"],["","校庭じゅうが、息を とめた。"]],
+   ["エンディング","ならんでお茶を飲む、ゲンさんとトメさん",["","玉は かごの上で ぶつかって、ふたつとも 落ちた。引き分け。"],["トメ","……来年も、元気でいなさいよ。"]]]}
+ ,{g:"music",title:"リコーダー・ロックフェス",il:["縦笛ピーヒャラ",""],genre:"音楽コメディ・アドベンチャー",cap:"本番前日・開発室",
+  scenes:[["タイトル画面","タイトル画面（巨大な野外ステージと、スポットライトをあびるリコーダー）",["","観客3万人。ステージの上には、小学生がひとり。"],["","手には、名前シールつきの リコーダー。"]],
+   ["主人公","リコーダーのボーカル・ソラ太（ランドセルを背負ったまま）",["ソラ太","みんなー！ ピーって いうぞー！"],["","（ピーーーーーー）"]],
+   ["メンバー","ドラム担当の校長先生（スーツ、ノリノリ）",["校長","いいかね。ロックとは、廊下を走らないことだ。"],["ソラ太","こうちょう先生、それは ちがうと思う。"]],
+   ["ピンチ","いちばん大事なところで、ソのシャープが出ない",["","サビの手前。指が、どうしても とどかない。"],["ソラ太","……いいや、ソで いく！ きもちは シャープだ！"]],
+   ["エンディング","アンコールで校歌を大合唱する3万人",["","アンコールは、校歌だった。3万人が、2番まで うたった。"],["校長","……3番も あるんだがね。"]]]}
+ ,{g:"music",title:"地下アイドルは地下3階",il:["地下三階モグラ",""],genre:"アイドル青春・アドベンチャー",cap:"ライブ前夜・開発室",
+  scenes:[["タイトル画面","タイトル画面（ビルの階段をずっと降りた先の、小さなライブハウス）",["","階段を、3階ぶん おりる。電波は とどかない。"],["","そこが、彼女の武道館だった。"]],
+   ["アイドル","自称・地底のプリンセス モグ美（手づくりの衣装）",["モグ美","みんなー！ 今日も 地上から ありがとー！"],["モグ美","……『みんな』は、いつか ふえる予定です！"]],
+   ["ファン","たったひとりの常連さん（ペンライトを3本持っている）",["常連さん","モグ美ちゃーん！ 今日も 3人ぶん 光らせるよー！"],["モグ美","（うで、つりませんように…）"]],
+   ["ハプニング","停電した会場を、ペンライトだけが照らす",["","曲のとちゅうで、電気が 落ちた。マイクも、照明も。"],["","まっくらな中で、3本の光だけが ゆれていた。"]],
+   ["エンディング","客席にふたり目のファンがいる、次のライブ",["モグ美","今日は……ふ、ふたりも いるー！！"],["常連さん","ぼくが つれてきました。母です。"]]]}
+ ,{g:"music",title:"ストリートピアノと迷子の音符",il:["連弾かた手",""],genre:"音楽ヒューマン・アドベンチャー",cap:"終電まぎわ・開発室",
+  scenes:[["タイトル画面","タイトル画面（駅の広場にぽつんと置かれた、だれでも弾けるピアノ）",["","駅の広場に、ピアノが 1台 おいてある。"],["","『どなたでも どうぞ』。でも、だれも さわらない。"]],
+   ["主人公","人さし指1本でしか弾けない会社員（かばんを足にはさんでいる）",["会社員","ド、レ、ミ……の、つぎ、どこだっけ。"],["会社員","子どものころ、3か月だけ 習ってたんだよな。"]],
+   ["出会い","となりにすわって、勝手に弾きはじめる知らない子ども",["子ども","おじさん、そこ ファ だよ。あたしが 下の音 やるね。"],["会社員","え、あ、はい。……おねがいします。"]],
+   ["小さな奇跡","足を止めて聴いている、たくさんの通行人",["","へたな メロディに、じょうずな 伴奏が ついた。"],["","いそいでいた人たちが、ひとり、またひとりと 立ちどまった。"]],
+   ["エンディング","手をふって別れるふたりと、夕ぐれの駅",["子ども","おじさん、あしたも くる？ つぎは 両手ね。"],["会社員","……れんしゅう、しとくよ。"]]]}
+];
+const ALT={
+"ポンコツ勇者と最後のセーブポイント":[[["","セーブポイントが消えて、もう三日。"],["","世界中の冒険者が、こまめに休憩するようになった。"]],[["ポン太","勇者ポン太、参上！ 地図は逆さまに持ってた！"],["ポン太","どうりで海に着くわけだ！"]],[["モチ","きゅいきゅい！"],["","（訳：火は吹けないけど、ため息なら出るよ）"]],[["魔王デッドライン","フハハ…貴様のセーブデータは、すでに上書きした。"],["魔王デッドライン","……まちがえて自分のも消したがな。"]],[["","世界は救われ、人々は安心して電源を切った。"],["ポン太","次の冒険は……あした考えよ。"]]],
+"ドラゴン不動産":[[["","家を探すなら、ドラゴンに聞け。"],["","この町のことわざである。たぶん。"]],[["ヤドリ","敷金・礼金・財宝ゼロの物件、ございますよ。"],["ヤドリ","ただし、先住のコウモリが少々。"]],[["スライム","前の家は、乾燥がひどくて…。"],["スライム","朝おきたら、ひとまわり小さくなってたんです…。"]],[["ヤドリ","こちら、雲の上の塔。眺望は抜群です。"],["スライム","階段、何段ですか…？ ぼく、足がなくて…。"]],[["","契約書には、ぷるんとしたハンコが押された。"],["ヤドリ","ご入居おめでとう。雨の日は、お茶でも飲みに来てね。"]]],
+"おにぎり戦記":[[["","朝7時。お弁当箱のふたが、ゆっくり開く。"],["","戦いは、もう始まっていた。"]],[["ムスビ","具がないって笑うやつは、塩の本気を知らないんだ。"],["ムスビ","……でも、うめぼしにはちょっと憧れる。"]],[["たくあん忍者","忍法・はしやすめの術！"],["","（味がリセットされた）"]],[["クロワッサン将軍","われらは朝食の王。昼は、ついでにもらっていく。"],["クロワッサン将軍","くっ…湿気が…！ 弁当箱の中は湿気がすごい…！"]],[["","お昼のチャイムが鳴った。"],["ムスビ","「いただきます」って、いい言葉だよな。"]]],
+"隣の席のきみは宇宙人かもしれない":[[["","4月。席替えのくじは、運命より正確だった。"],["","となりの席の子は、たまに3センチ浮いている。"]],[["ソラ","この星のあいさつは『おはよう』ですね。予習しました。"],["ソラ","……『この星』は、いまのなしで。"]],[["鬼瓦","星野さん、廊下で浮くのは禁止よ。"],["鬼瓦","……校則にはないわね。いま作るわ。"]],[["","体育祭の空に、見たことのない星がひとつ増えた。"],["ソラ","お母さんだ。授業参観、来ちゃった。"]],[["ソラ","地球の『好き』は、どの周波数で送ればいいの？"],["","アンテナが、夕日の中でぴこんと揺れた。"]]],
+"購買のパンは恋より早く売り切れる":[[["","4時間目の終わり。全員の足が、すでに廊下を向いている。"],["","この学校の昼休みは、陸上競技である。"]],[["小麦","今日のルートは、階段より渡り廊下。風向きもよし。"],["小麦","パンのためなら、物理も勉強する。"]],[["先輩","取り置きは、できない決まりなんだ。ごめんね。"],["小麦","（その『ごめんね』だけで、おなかいっぱいです）"]],[["","残り1個。伸ばした手の先に、もうひとつの手。"],["","パンより先に、指がふれた。"]],[["小麦","明日は、わたしがおごります。メロンパン。"],["先輩","じゃあ、あさってはぼくだね。"]]],
+"図書室の返却期限は恋のしめきり":[[["","図書室の窓ぎわは、夕方になると金色になる。"],["","その席には、いつも同じ人が座っていた。"]],[["栞","私語は禁止です。……小声なら、いいです。"],["栞","（ルールを作ったのは、わたしじゃないし）"]],[["彼","この本、最後のページだけ、まだ読んでないんです。"],["彼","読み終わったら、来る理由がなくなるので。"]],[["","貸出カードのすみに、えんぴつで小さな字。"],["","『おすすめの本、ありますか。できれば、長いやつ』"]],[["栞","全12巻の長編があります。1冊ずつ、どうぞ。"],["","それは、少なくとも24週間の約束だった。"]]],
+"午前2時のコインランドリー":[[["","この店の乾燥機は、100円で10分。"],["","ただし3番だけは、だれも使わない。"]],[["会社員","終電をのがして、洗濯物だけが増えていく。"],["会社員","人生って、だいたい洗濯なんですよ。"]],[["","洗濯機のランプが、ひとりでに『すすぎ』に変わった。"],["会社員","……いや、まだ洗剤も入れてないんだけど。"]],[["洗濯物おばけ","く〜つ〜し〜た〜……か〜た〜ほ〜う〜……"],["洗濯物おばけ","か〜え〜し〜て〜あ〜げ〜る〜……"]],[["","なくしたくつ下が、全部そろって返ってきた。"],["会社員","……いい店じゃん、ここ。"]]],
+"エレベーターは13階に止まらない":[[["","管理人は言った。『13階は、ないことになってます』"],["","『ないこと』に、なっているだけだった。"]],[["大学生","駅徒歩3分、築40年、いわくつき。"],["大学生","最後のは、内見のあとで聞きました。"]],[["","だれもボタンを押していないのに、扉が開いた。"],["","廊下の奥で、蛍光灯がひとつだけ点いていた。"]],[["大家さん","回覧板ね〜、50年ぶんたまってるのよ〜"],["大家さん","読む？ 昭和のから〜"]],[["大学生","13階、Wi-Fiだけ異様に速いんですね。"],["大家さん","だれも使ってないからね〜"]]],
+"祖母の家の、開かずの冷蔵庫":[[["","その冷蔵庫は、おじいちゃんより年上らしい。"],["","うなる音が、ときどき返事に聞こえる。"]],[["孫","スイカを冷やすだけ。それだけだから。"],["孫","2段目は見ない。……ちらっとしか。"]],[["","とびらのすきまから、冷たい光と、ぬかのにおい。"],["","そして、なにかが『ぽこっ』と泡をたてた。"]],[["ぬか床の主","な〜す〜……きゅ〜う〜り〜……"],["ぬか床の主","だ〜い〜こ〜ん〜も〜い〜れ〜ろ〜……"]],[["孫","おばあちゃん、あれ、なに？"],["おばあちゃん","うちの守り神だよ。塩かげんにうるさいけどね。"]]],
+"名探偵は猫である":[[["","嵐の夜、洋館の電気が消えた。"],["","探偵の目だけが、暗闇で光っていた。"]],[["ミケランジェロ","……にゃ。"],["","（訳：その箱は証拠品だ。だが入ってみないとわからん）"]],[["新米刑事","警部、容疑者の足にすりすりしないでください！"],["新米刑事","え、それも捜査？ 本当ですか？"]],[["","現場には、毛玉がひとつ。"],["新米刑事","警部、これ警部のですよね。色が同じですよね。"]],[["","真相は、日だまりの中でうやむやになった。"],["ミケランジェロ","ごろごろ。（訳：平和がいちばん）"]]],
+"消えたプリンと5人の容疑者":[[["","それは『3時に食べる』と決めていたプリンだった。"],["","2時59分。冷蔵庫を開けた妹の、悲鳴がひびいた。"]],[["妹","アリバイを聞きます。2時から3時、どこで何を？"],["妹","『台所にいた』は、自白とみなします。"]],[["祖父","わしは昼寝しとった。夢の中ではプリンを食べたがの。"],["妹","夢は不起訴です。次の人。"]],[["妹","ゴミ箱に、ふたが捨ててありました。指紋つきで。"],["父","……手袋をしておくべきだった。"]],[["父","駅前の、1個400円のやつだ。"],["妹","……執行猶予をつけます。"]]],
+"豪華客船ゆうなぎ号の暗号":[[["","霧の港を、ゆうなぎ号がしずかに離れる。"],["","探偵は出航の汽笛で、すでにぐったりしていた。"]],[["探偵","事件は…陸で…起きてほしかった……"],["探偵","推理は横になったままでも…できる……"]],[["老婦人","この船には、秘密がありますの。"],["老婦人","わたくしのカンでは、厨房があやしいですわ。"]],[["","紙のうらには、もう1行。『ムス 40プン』"],["探偵","40分…蒸す…？ 時限装置か……？"]],[["船長","蒸しプリンです。40分蒸すと、ちょうどいいんですよ。"],["探偵","……酔い止めより効くな、これは。"]]],
+"宇宙コンビニ 銀河店":[[["","最寄りの星まで、3光年。"],["","それでも、のぼりは出ている。『おでん始めました』"]],[["テンチョー","レジ袋ハ 有料デス。無重力対応ハ プラス3円。"],["テンチョー","浮イテモ 中身ガ 出マセン。"]],[["常連客","おにぎりの『地球味』って、どんな味？"],["テンチョー","シオ デス。"]],[["クレーマー","コピー機に、惑星がつまったんだが？"],["テンチョー","A4 ヨリ 大キイ モノハ 入レナイデ クダサイ。"]],[["常連客","あしたも来るよ。あしたって、いつだっけ。"],["テンチョー","当店ハ 地球時間デス。マタ ドウゾ。"]]],
+"侍、リモートワーク始めました":[[["","参勤交代は、おんらいんになった。"],["","大名行列は、いまや招待状1通である。"]],[["畳之介","刀は床の間に、まうすは右手に。"],["畳之介","これが令和の二刀流でござる。"]],[["殿","皆の者、聞こえておるか。……聞こえておるか？"],["畳之介","殿、こんどは かめら が天井を映してござる。"]],[["カイセンオチ","ぷつっ……ぷつっ……"],["畳之介","殿のお顔が止まった！ よりによって白目で！"]],[["","評定は無事に終わり、議事録は巻物で届いた。"],["畳之介","さて、ひとっ風呂。通勤がないのは、よきかな。"]]],
+"魔王城コールセンター":[[["","『この通話は、品質向上のため水晶玉に録音されます』"],["","魔王城の夜は、保留音からはじまる。"]],[["ゴブリン","えっと、呪いの解除は、3番を押してください！"],["ゴブリン","……あ、ちがう、3番は『呪いの追加』でした！"]],[["スケルトン課長","お客様の声は宝だ。耳をすませて聞け。"],["スケルトン課長","わたしには耳がないがね。カタカタ。"]],[["勇者","ラスボスの部屋、いつ行っても『会議中』なんですけど！"],["ゴブリン","魔王はただいま、席をはずしておりまして……"]],[["","最後の電話は、勇者からの『ありがとう』だった。"],["ゴブリン","……この仕事、きらいじゃないかも。"]]],
+"全力！まくら投げ甲子園":[[["","午後9時。先生の足音が、遠ざかっていく。"],["","それが、試合開始のホイッスルだった。"]],[["枕田","低反発は投げにくい。だがそれがいい。"],["枕田","もどってくるからな、手に。"]],[["鬼コーチ","まくらを信じろ！ まくらはお前を裏切らない！"],["鬼コーチ","毎晩、頭をあずけてるだろうが！"]],[["ライバル","うちの学校は、まくらカバーまで特注だ。"],["枕田","シルク……だと……！？"]],[["","先生がふすまを開けたとき、全員、寝たふりが完璧だった。"],["","ひとりだけ、本当に寝ていた。"]]],
+"ペンギン、南へ行く（もう南にいる）":[[["","白い世界に、小さな足あとが続いている。"],["","足あとは、だいたい南を向いていた。"]],[["コオリ","リュックには、魚が3びき。旅はこれで足りるよね。"],["コオリ","……もう1ぴき食べちゃったけど。"]],[["アザラシ","ぼく、迷子になって3年目なんだ。"],["アザラシ","もう、ここが家でいい気がしてきた。"]],[["","吹雪で、前が見えなくなった。"],["アザラシ","おなかですべれば早いよ。こわくないよ。たぶん。"]],[["コオリ","楽園って、あったかい場所のことじゃなかったんだね。"],["","ふたりは、ならんで朝日を見た。"]]],
+"おばあちゃんとロボ掃除機の夏":[[["","ウメさんの家は、ちょっと広くて、ちょっと静かだった。"],["","段ボール箱がひとつ、届くまでは。"]],[["ウメ","掃除機にごはんはいらないのかい。"],["ウメ","電気だけ？ 安あがりだねえ、あんた。"]],[["まるお","ピポポ。（障害物ヲ検知シマシタ）"],["ウメ","それはわたしの足だよ、まるお。"]],[["","まるおは、縁の下で猫と出会った。"],["","猫は、まるおに乗った。"]],[["ウメ","来年の夏も、いっしょに掃除しようね。"],["まるお","ピポ。（充電シテ、待ッテイマス）"]]]
+};
+const TWISTS=["ドアップで","ひきの構図で","逆光で","雨が降っている","夕暮れの色合いで","画面のどこかに猫を1匹","なぜか花びらが舞っている","暖色だけで","寒色だけで","3色以内で","とにかく大胆に","かわいさ3割増しで","劇画タッチで","絵本のように","すみっこにサインを入れて","雪が降っている","ななめの構図で"];
+const PERSONAS=[["辛口だけど愛のある","辛口"],["とにかくほめて伸ばす激甘の","激甘"],["関西弁でツッコミを入れる","関西弁"],["武士のような口調で話す","武士"],["なんでもポエムにしてしまう","ポエマー"],["熱血体育会系の","熱血"],["眠そうでテンションの低い","低血圧"],["やたらと横文字を使う意識の高い","意識高い"]];
+const QUIPS=["たのむ…もう君しかいないんだ…","うまくなくていい。あればいい。あれば。","報酬は、ぼくの感謝と麦茶です。","深呼吸して。締切は見ないで。","この1枚に、ぼくの睡眠時間がかかってる。","大丈夫、ぼくの棒人間よりは絶対いい。","思いきって描いちゃって。責任はぼくが取る…たぶん。","線が曲がっても気にしない。味だから。"];
+const OUTRO=["……というわけで、頼みます。ほんとに。","お礼は、エンドロールに名前をのせることで。","ぼくは隣で、麦茶をいれて応援しています。","失敗してもいい。白紙よりは、ぜったいにいい。"];
+let AD=PERSONAS[0];
+const STICK='<circle cx="60" cy="24" r="10"/><path d="M60 34v28M60 42l-16 10M60 42l17-6M60 62l-10 18M60 62l12 17"/>';
+const KARI={
+ hero:[STICK+'<path d="M77 36l15-17M86 21l7 7"/>',"（仮）ゆうしゃ"],
+ alien:[STICK+'<path d="M60 14V5"/><circle cx="60" cy="4" r="2.5" fill="#333"/><path d="M52 56h16l6 12H46z" fill="#fff"/>',"（仮）ヒロイン"],
+ cat:['<circle cx="60" cy="28" r="13"/><path d="M49 20l-3-12 11 6M71 20l3-12-11 6"/><circle cx="55" cy="27" r="1.5" fill="#333"/><circle cx="65" cy="27" r="1.5" fill="#333"/><path d="M57 33q3 3 6 0M47 29H35M47 32l-11 3M73 29h12M73 32l11 3"/><ellipse cx="60" cy="58" rx="13" ry="15"/><path d="M73 64q16 2 12-14"/>',"（仮）めいたんてい"],
+ onigiri:['<path d="M60 10q6 0 24 40q4 12-8 12H44q-12 0-8-12q18-40 24-40z" fill="#fff"/><rect x="50" y="46" width="20" height="16" fill="#333"/><circle cx="54" cy="34" r="1.6" fill="#333"/><circle cx="66" cy="34" r="1.6" fill="#333"/><path d="M56 40q4 3 8 0M48 62l-4 14M72 62l4 14"/>',"（仮）おにぎり"],
+ samurai:[STICK+'<path d="M60 14V6M56 7h8M43 52L27 66"/><path d="M78 26h16v11H78zM74 39h24"/>',"（仮）さむらい"]
+};
+let KSVG=KARI.hero[0],KLAB=KARI.hero[1];
+/* ===== 導入のモニター画面（チャット・ドライブ・メールなど） ===== */
+const MON={
+ "隣の席のきみは宇宙人かもしれない":{k:"chat",msgs:[["t","旅に出ます。"],["t","探さないでください。"],["s","成田空港から送信"]]},
+ "午前2時のコインランドリー":{k:"drive",files:[["haikei_01.png","black"],["shujinkou.png","black"],["kaii.png","black"],["kaii_2.png","black"],["ending.png","black"]],note:"闇を表現しました"},
+ "名探偵は猫である":{k:"drive",files:[["neko_1.jpg","cat"],["neko_2.jpg","cat2"],["neko_3.jpg","cat"],["neko_4.jpg","cat2"],["neko_5.jpg","cat"]],note:"うちの子です。描く時間はありませんでした"},
+ "宇宙コンビニ 銀河店":{k:"chat",msgs:[["m","本日納品ですよね？",1],["t","え？"],["t","来年の今日ですよね？"],["t","いまラフの構想の構想を練ってます"]]},
+ "おにぎり戦記":{k:"list",rows:[["onigiri_final.psd","開けません"],["onigiri_final_FINAL.psd","開けません"],["onigiri_honto_ni_final2.psd","0バイト"]],pop:"ファイルが破損しています",note:"再送のお願い → 宛先不明で戻ってきました"},
+ "侍、リモートワーク始めました":{k:"chat",msgs:[["s","3週間前"],["m","進捗いかがでしょうか",1],["m","お元気ですか",1],["m","せめてスタンプだけでも",1],["m","……",1]]},
+ "ドラゴン不動産":{k:"doc",title:"ご請求書",rows:[["イラスト制作費","5点"],["構想費","一式"],["気持ち代","一式"]],stamp:"納品物：なし"},
+ "全力！まくら投げ甲子園":{k:"drive",files:[["01.png","robot"],["02.png","robot"],["03_gattai.png","robot2"],["04.png","robot"],["05_kime.png","robot2"]],note:"ロボ5点、納品します！"},
+ "ペンギン、南へ行く（もう南にいる）":{k:"mail",draft:1,subject:"イラスト制作のご依頼",time:"保存日：3か月前",body:["はじめまして。","ゲームのイラストをお願いしたく、ご連絡しました。"],badge:"未送信"},
+ "購買のパンは恋より早く売り切れる":{k:"chat",msgs:[["t","恋をしました。"],["t","手につきません。ペンも。"],["t","追伸：相手はパン屋さんです"]]},
+ "図書室の返却期限は恋のしめきり":{k:"drive",files:[["01.txt","txt"],["02.txt","txt"],["03.txt","txt"],["04.txt","txt"],["05.txt","txt"]],note:"絵より言葉で届けたくなりました"},
+ "エレベーターは13階に止まらない":{k:"mail",subject:"（件名なし）",time:"4:44",body:["うしろ"],attach:"添付ファイルなし"},
+ "祖母の家の、開かずの冷蔵庫":{k:"drive",files:[["たすけて.png","msg"],["たすけて2.png","msg"],["たすけて_最終.png","msg"]],note:"中身はぜんぶ同じ画像でした"},
+ "消えたプリンと5人の容疑者":{k:"mail",subject:"自白します",time:"23:58",body:["犯人は私です。","描いていません。1枚も。","動機：ゲームをしていました"]},
+ "豪華客船ゆうなぎ号の暗号":{k:"dialog",file:"illust_all.zip",hint:"私の好きな食べ物",left:"のこり 0 回"},
+ "魔王城コールセンター":{k:"mail",subject:"【自動返信】転職のお知らせ",time:"たった今",body:["このたび転職いたしました。","現在はパン職人をしております。","イラストのご依頼は承っておりません。"]},
+ "おばあちゃんとロボ掃除機の夏":{k:"drive",files:[["01.png 16×16","px"],["02.png 16×16","px"],["03.png 8×8","px2"],["04.png 16×16","px"],["05.png 8×8","px2"]],note:"容量を節約しました"}
+};
+const THUMB={
+ black:'<rect width="40" height="30" fill="#000"/>',
+ cat:'<rect width="40" height="30" fill="#e9d7b8"/><ellipse cx="21" cy="21" rx="10" ry="7" fill="#d98a3d"/><circle cx="14" cy="14" r="6" fill="#d98a3d"/><path d="M9 11l1-6 4 4zM19 11l-1-6-4 4z" fill="#d98a3d"/><circle cx="12" cy="14" r=".9"/><circle cx="16" cy="14" r=".9"/><path d="M31 20q5-2 3-8" fill="none" stroke="#d98a3d" stroke-width="2"/>',
+ cat2:'<rect width="40" height="30" fill="#cfe0ea"/><rect y="22" width="40" height="8" fill="#b89b7a"/><ellipse cx="20" cy="19" rx="11" ry="6" fill="#8a8f99"/><circle cx="27" cy="13" r="5.5" fill="#8a8f99"/><path d="M22.5 10l1-5 3 3zM31.5 10l-1-5-3 3z" fill="#8a8f99"/><path d="M24.5 13h2M28.5 13h2" stroke="#000" stroke-width=".8"/>',
+ robot:'<rect width="40" height="30" fill="#dfe7ef"/><rect x="15" y="4" width="10" height="7" fill="#7b8794"/><rect x="12" y="12" width="16" height="11" fill="#566170"/><rect x="6" y="13" width="5" height="9" fill="#7b8794"/><rect x="29" y="13" width="5" height="9" fill="#7b8794"/><rect x="14" y="24" width="4" height="5" fill="#7b8794"/><rect x="22" y="24" width="4" height="5" fill="#7b8794"/><rect x="17" y="6" width="6" height="2" fill="#e33"/>',
+ robot2:'<rect width="40" height="30" fill="#1d2740"/><path d="M20 2l2 5 5 1-4 3 1 5-4-3-4 3 1-5-4-3 5-1z" fill="#ffd23f"/><rect x="10" y="15" width="20" height="10" fill="#7b8794"/><rect x="4" y="16" width="5" height="8" fill="#566170"/><rect x="31" y="16" width="5" height="8" fill="#566170"/><rect x="16" y="18" width="8" height="2" fill="#e33"/>',
+ txt:'<rect width="40" height="30" fill="#fff"/><path d="M6 6h22M6 10h28M6 14h18M6 18h26M6 22h14" stroke="#aab" stroke-width="1.4"/>',
+ msg:'<rect width="40" height="30" fill="#fff"/><text x="20" y="18" font-size="7" text-anchor="middle" fill="#c22" font-weight="700">締切から</text>',
+ px:'<rect width="40" height="30" fill="#fff"/><rect x="16" y="11" width="4" height="4" fill="#888"/><rect x="20" y="11" width="4" height="4" fill="#bbb"/><rect x="16" y="15" width="4" height="4" fill="#bbb"/><rect x="20" y="15" width="4" height="4" fill="#666"/>',
+ px2:'<rect width="40" height="30" fill="#fff"/><rect x="17" y="13" width="3" height="3" fill="#888"/><rect x="20" y="13" width="3" height="3" fill="#bbb"/>'
+};
+function scr(m,c){
+  const av=`<span class="cav">${esc(ILL.slice(0,1))}</span>`;
+  if(m.k==="chat")return `<div class="scr chat${c}"><div class="chd">‹　${esc(ILL)}</div><div class="cbody">${m.msgs.map(x=>
+    x[0]==="s"?`<div class="csys">${esc(x[1])}</div>`:x[0]==="m"?`<div class="cm me"><small>${x[2]?"既読":""}</small><span class="bub">${esc(x[1])}</span></div>`:`<div class="cm">${av}<span class="bub">${esc(x[1])}</span></div>`).join("")}</div></div>`;
+  if(m.k==="drive")return `<div class="scr drv${c}"><div class="dhd"><b>ドライブ</b>›　共有フォルダ　›　納品（${esc(ILL)}）<span>${m.files.length}個のファイル</span></div>
+    <div class="dgrid">${m.files.map(f=>`<div class="df"><svg viewBox="0 0 40 30">${THUMB[f[1]]||THUMB.txt}</svg><div class="dn">${esc(f[0])}</div></div>`).join("")}</div>${m.note?`<div class="dnote">メモ：「${esc(m.note)}」</div>`:""}</div>`;
+  if(m.k==="list")return `<div class="scr drv${c}"><div class="dhd"><b>ドライブ</b>›　共有フォルダ　›　納品（${esc(ILL)}）<span>${m.rows.length}個のファイル</span></div>
+    ${m.rows.map(r=>`<div class="lrow">📄 ${esc(r[0])}<b>${esc(r[1])}</b></div>`).join("")}${m.note?`<div class="dnote" style="margin-top:.5em">${esc(m.note)}</div>`:""}<div class="pop">⚠ ${esc(m.pop)}</div></div>`;
+  if(m.k==="mail")return `<div class="scr mail${c}"><div class="mside"><b>メール</b><div class="${m.draft?"":"on"}">受信トレイ${m.draft?"":" 1"}</div><div class="${m.draft?"on":""}">下書き${m.draft?" 1":""}</div><div>送信済み</div></div>
+    <div class="mmain"><div class="msub">${esc(m.subject)} ${m.badge?`<span class="badge">${esc(m.badge)}</span>`:""}</div>
+    <div class="mfrom">${av}<div><b>${m.draft?"宛先：":""}${esc(ILL)}</b><small>${esc(m.time||"")}</small></div></div>
+    <div class="mbody">${m.body.map(esc).join("<br>")}</div>${m.attach?`<div class="matt">📎 ${esc(m.attach)}</div>`:""}</div></div>`;
+  if(m.k==="dialog")return `<div class="scr dsk${c}"><div class="win"><div class="wt">🔒 ${esc(m.file)}</div><div class="wb"><div>パスワードを入力してください</div><div class="pw">●●●●●●</div>
+    <div style="color:#667">ヒント：「${esc(m.hint)}」</div><div style="color:#d22;font-weight:700">パスワードが違います（${esc(m.left)}）</div><div class="wbtn"><span>キャンセル</span><span>OK</span></div></div></div></div>`;
+  if(m.k==="sns")return `<div class="scr sns${c}"><div class="post"><div class="mfrom" style="border:0">${av}<div><b>${esc(ILL)}</b><small>3分前</small></div></div><div>${esc(m.text)}</div>
+    <svg viewBox="0 0 80 26" style="width:100%;display:block;border-radius:.4em"><rect width="80" height="26" fill="#cfe6ea"/><ellipse cx="40" cy="20" rx="34" ry="7" fill="#7ec3d6"/><circle cx="40" cy="14" r="4" fill="#f3c9a5"/><rect x="36" y="9" width="8" height="2.4" fill="#fff"/><path d="M22 10q2-3 0-6M28 10q2-3 0-6M54 10q2-3 0-6" stroke="#fff" stroke-width="1.2" fill="none"/></svg>
+    <div style="color:#2a6fd6">${esc(m.tag)}</div><div style="color:#789">♥ ${esc(m.likes)}　💬 88　↻ 302</div></div></div>`;
+  if(m.k==="track")return `<div class="scr drv${c}"><div class="dhd"><b>配送状況</b>　差出人：${esc(ILL)}</div><div class="trk">${m.steps.map((s,k)=>`<div class="ts${k===2?" now":""}"><i></i><b>${esc(s[0])}</b><span>${esc(s[1])}</span></div>`).join("")}</div></div>`;
+  if(m.k==="todo")return `<div class="scr drv${c}"><div class="dhd"><b>やることリスト</b>　${esc(ILL)} さんが共有</div>${m.items.map(t=>`<div class="lrow">${t[1]?"☑":"☐"} <span style="${t[1]?"text-decoration:line-through;color:#99a":"font-weight:800"}">${esc(t[0])}</span>${t[1]?"":"<b>未着手</b>"}</div>`).join("")}</div>`;
+  if(m.k==="news")return `<div class="scr nws${c}"><div class="nbar">速報</div><div class="nhead">${esc(m.head)}</div><div class="nsub">${esc(m.sub)}</div><div class="ntick">${esc(ILL)} さん　｜　関係者「締切については聞いていない」</div></div>`;
+  if(m.k==="call")return `<div class="scr call${c}"><div class="cface">${esc(ILL.slice(0,1))}</div><b>${esc(ILL)}</b><div style="color:#f88">${esc(m.status)}</div><div style="opacity:.7">${esc(m.sub)}</div><div class="hang">✕</div></div>`;
+  if(m.k==="map")return `<div class="scr${c}"><svg viewBox="0 0 160 100" preserveAspectRatio="xMidYMid slice" style="position:absolute;inset:0;width:100%;height:100%"><rect width="160" height="100" fill="#a9d3ea"/><path d="M0 60q20-18 44-8t30 30L60 100H0z" fill="#cfe3b8"/><path d="M120 0q-14 20 6 30t34-6V0z" fill="#cfe3b8"/><path d="M30 70Q70 50 118 24" stroke="#e33" stroke-width="1.5" stroke-dasharray="3 3" fill="none"/><circle cx="30" cy="70" r="3" fill="#e33"/><text x="118" y="27" font-size="12" text-anchor="middle">✈</text></svg>
+    <div class="mlab"><b>${esc(ILL)}</b><br>${esc(m.label)}<br><span style="color:#789">${esc(m.sub)}</span></div></div>`;
+  if(m.k==="voice")return `<div class="scr dsk${c}" style="background:#2b3a55"><div class="win"><div class="wt">留守番電話　${esc(ILL)}</div><div class="wb"><div style="display:flex;gap:.6em;align-items:center"><span class="cav" style="background:#2a6fd6;color:#fff">▶</span><svg viewBox="0 0 100 14" style="flex:1;height:1.4em"><path d="M2 7h3M8 3v8M12 5v4M16 1v12M20 4v6M24 6v2M28 2v10M32 5v4M36 3v8M40 6v2M44 1v12M48 4v6M52 6v2M56 3v8M60 5v4M64 2v10M68 6v2M72 4v6M76 5v4M80 6v2" stroke="#2a6fd6" stroke-width="2" stroke-linecap="round"/></svg><span>${esc(m.dur)}</span></div><div>「${esc(m.text)}」</div></div></div></div>`;
+  if(m.k==="quota")return `<div class="scr drv${c}"><div class="dhd"><b>ドライブ</b>　${esc(ILL)} さんの保存容量</div><div style="padding:.7em .9em;display:flex;flex-direction:column;gap:.5em"><div class="qbar"><i></i></div><div>使用量 <b style="color:#d22">100%</b>　内訳：${esc(m.files)}</div><div class="dnote" style="margin:0;border-color:#d22;background:#ffecec;color:#b11">⚠ ${esc(m.msg)}</div></div></div>`;
+  if(m.k==="doc")return `<div class="scr docw${c}"><div class="paper"><h4>${esc(m.title)}</h4><div style="text-align:right;font-size:.8em">発行：${esc(ILL)}</div>
+    ${m.rows.map(r=>`<div class="prow"><span>${esc(r[0])}</span><span>${esc(r[1])}</span></div>`).join("")}<div class="prow" style="font-weight:800"><span>合計</span><span>要相談</span></div><div class="stamp">${esc(m.stamp)}</div></div></div>`;
+  return "";
+}
+const GENRES=[["fantasy","ファンタジー"],["love","学園・恋愛"],["horror","ホラー"],["mystery","ミステリー"],["work","お仕事コメディ"],["heart","青春・ほのぼの"],["sf","SF・宇宙"],["jidai","時代劇・歴史"],["animal","どうぶつ・絵本"],["gourmet","グルメ・料理"],["sports","スポーツ・熱血"],["music","音楽・ステージ"]];
+/* ===== どのゲームにも使える導入パターン ===== */
+const G_BUILD=["ふぅ〜、シナリオ完成！ あとはイラストを入れるだけ！","できた…ついにできた…自分をほめたい…","よーし、最後の1行を書き終えた！ 天才かもしれない！","完成！ 3日寝てないけど完成！","テストプレイも問題なし。絵がないこと以外は。"];
+const G_CHECK=["イラストレーターさんの様子を見てみよう。","さて、イラストレーターさんから納品は…っと。","イラストレーターさん、そろそろ送ってくれてるはず。","イラストレーターさんに連絡してみるか。"];
+const GINTRO=[
+ {mon:{k:"sns",text:"締切？ 知らない言葉ですね。温泉、最高〜！",tag:"#現実逃避 #源泉かけ流し",likes:"1,204"},t:["（イラストレーターさんの最新の投稿）","温泉に入ってる場合か！！ しかも いいね が1200もついてる！！","ぼくも押しそうになった。くやしい。","湯けむりの向こうに、絵はない。あなたが描くしかない。","描いた絵はAIが講評し、世間の声を作ります。"]},
+ {mon:{k:"track",steps:[["集荷","イラスト原画 5点"],["輸送中","なぜか船便"],["現在地","南極のあたり"],["お届け予定","来年の春"]]},t:["配送状況：輸送中","なんで紙で送った！？ なんで船！？ なんで南極まわり！？","データで…データで送ってくれれば一瞬だったのに…","荷物を待つより、描いたほうが早い。あなたが。","絵はAIが受け取って講評し、世間の声をお届けします。"]},
+ {mon:{k:"todo",items:[["ねる",1],["おやつ",1],["ねる（2回目）",1],["散歩",1],["イラスト5点",0]]},t:["（共有された、やることリスト）","それ以外は全部終わってる！！ しかも2回寝てる！！","いちばん下の1行だけ、きれいに残ってる…","最後のチェックをつけられるのは、あなたです。","描いた絵はAIが確認して、世間の声を作ります。"]},
+ {mon:{k:"news",head:"人気イラストレーター、宝くじ1等に当選",sub:"「しばらく絵は描きません。南の島で暮らします」"},t:["【速報】","おめでとう！！ おめでとうだけど！！ 今日だけ描いて！！","ぼくにも1枚…いや、イラストを5枚…","当たらないなら、描くしかない。あなたが。","絵はAIが見て、こちらの世間の声も速報します。"]},
+ {mon:{k:"call",status:"接続が切れました",sub:"再接続中… 47回目"},t:["（ビデオ通話）","いちばんいいところで固まった！！ しかも半目で！！","『いまから送りま』…で止まってる。『す』が聞きたい…","回線の向こうを待つより、あなたのペンを。","描いた絵はAIが見て、世間の声を届けます。"]},
+ {mon:{k:"map",label:"時速 900km で移動中",sub:"高度 10,000m"},t:["（位置情報の共有）","飛んでる！！ たとえ話じゃなくて、本当に飛んでる！！","『イラストレーターが飛んだ』って、物理的な話だったのか…","地上に残ったのは、シナリオと、あなた。","絵はAIが見て、世間の声をまとめます。"]},
+ {mon:{k:"voice",dur:"0:07",text:"ただいま、締切に出ることができません。ピーッという音のあとに、あきらめてください。"},t:["（留守番電話）","あきらめません！！ あきらめませんよ！！","ピーッのあと、30秒くらい無言で泣いてしまった。","伝言より、絵がほしい。あなたにお願いします。","描いた絵はAIが見て、世間の声を作ります。"]},
+ {mon:{k:"quota",msg:"容量がいっぱいのため、アップロードできませんでした",files:"猫の動画 4,812本"},t:["（アップロードの通知）","消して！！ 猫の動画を1本でいいから消して！！","4,812本、どれも消せないらしい。気持ちはわかる。","空き容量はゼロ。でも、あなたのキャンバスは真っ白。","絵はAIが見て、世間の声を保存します。"]},
+ {mon:{k:"chat",msgs:[["m","進捗どうですか？",1],["t","今日は『描くと運気が下がる日』でした"],["t","明日は『寝ると運気が上がる日』です"],["t","あさってはまだ占ってません"]]},t:["（メッセージ）","占いで納期を決めないで！！","ぼくの今日の運勢は、たぶん大凶だ…","運まかせにはできない。あなたの腕にまかせます。","描いた絵はAIが見て、世間の声を占い…作ります。"]},
+ {mon:{k:"mail",subject:"Re: Re: Re: Re: 納品の件",time:"1分前",body:["了解です！","（※この返信は10回目です。添付はありません）"],attach:"添付ファイルなし"},t:["（返信が来た）","返事だけはいい！！ 返事だけは毎回いい！！","『了解です！』が10通。絵は0枚。","了解しなくていいので、描いてください。あなたが。","絵はAIが見て、世間の声を返信します。"]}
+];
+let lastG=-1;
+function genericIntro(){let k;do{k=Math.floor(Math.random()*GINTRO.length)}while(k===lastG&&GINTRO.length>1);lastG=k;const g=GINTRO[k],t=g.t;
+  return[[D,pick(G_BUILD),"build"],[D,pick(G_CHECK),"check"],["",t[0],g.mon],[D,t[1],"same",1],[D,t[2],"empty"],["",t[3],"empty"],["",t[4],"empty"]]}
+
+let played=[];try{played=JSON.parse(localStorage.getItem("adv_played")||"[]")||[]}catch(e){played=[]}
+function loadPack(g){
+  const all=PACKS.map((_,i)=>i).filter(i=>g==="any"||PACKS[i].g===g);let rest=all.filter(i=>!played.includes(i));
+  if(!rest.length){const lastK=played[played.length-1];played=played.filter(i=>!all.includes(i));rest=all.filter(i=>i!==lastK||all.length===1)}
+  const k=pick(rest);
+  played=played.filter(i=>i!==k).concat(k);try{localStorage.setItem("adv_played",JSON.stringify(played))}catch(e){}
+  const p=PACKS[k];GAME=p.title;GENRE=p.genre;GKEY=p.g;CAP=p.cap;ILL=p.il[0];ILLP=p.il[1];
+  const nm=t=>t.replace(/イラストレーターさん/g,ILL+"さん").replace(/絵師どの/g,ILL+"どの");
+  const alt=ALT[p.title];AD=pick(PERSONAS);
+  if(p.kari||p===PACKS[0]){const kk=KARI[p.kari||"hero"];KSVG=kk[0];KLAB=kk[1]}else{KSVG=STICK;KLAB="（仮）"+p.scenes[1][0]}
+  SCENES=p.scenes.map((s,i)=>({name:s[0],odai:s[1],lines:alt&&alt[i]&&Math.random()<.5?alt[i]:[s[2],s[3]],twist:Math.random()<.6?pick(TWISTS):""}));
+  let pm="empty";INTRO=((p.intro&&Math.random()<.5)?p.intro:genericIntro()).map(a=>{const m=a[2]==="same"?pm:(Array.isArray(a[2])&&MON[p.title])?MON[p.title]:a[2];pm=m;return{who:a[0],t:nm(a[1]),m,panic:a[3]?1:0}});
+  INTRO.push({who:D,t:pick(OUTRO),m:"empty",panic:0});
+}
+
+let ST={genre:"any",deadline:true,arts:[],noAI:false,tok:0};
+let keyNext=null,timer=0;
+
+/* ===== AI ===== */
+let samplerP=null;
+function getSampler(){
+  if(!samplerP)samplerP=(async()=>{try{if(!window.claude||typeof window.claude.use!=="function")return null;return await window.claude.use("sample")}catch(e){return null}})();
+  return samplerP;
+}
+getSampler();
+const withTimeout=(p,ms)=>Promise.race([p,new Promise((_,rej)=>setTimeout(()=>rej(new Error("timeout")),ms))]);
+async function askAI(prompt,blobs){
+  if(ST.noAI)throw new Error("off");
+  const s=await getSampler();if(!s)throw new Error("unavailable");
+  const opts={};
+  if(blobs&&blobs.length){let ok=false;try{ok=!!(await s.limits()).images}catch(e){}if(!ok)throw new Error("no-images");opts.images=blobs}
+  try{return await s.json(prompt,opts)}
+  catch(e){if(e&&(e.code==="not_granted"||e.code==="rate_limited"))ST.noAI=true;throw e}
+}
+
+/* ===== 画面 ===== */
+function show(html){ST.tok++;clearInterval(timer);keyNext=null;app.innerHTML=html;window.scrollTo(0,0)}
+
+function title(){
+  ST={deadline:ST.deadline,genre:ST.genre||"any",arts:[],noAI:false,tok:ST.tok};
+  show(`<div class="center">
+    <p class="pre">イラストレーターが飛んだ。締切は今日。</p>
+    <h1 class="logo">アドベンチャー<span>or</span><i>アドベンチャ</i></h1>
+    <div><p class="small" style="margin:0 auto 6px">つくるゲームのジャンル</p><div class="gens" id="gens">${[["any","おまかせ"]].concat(GENRES).map(g=>`<button class="tb${ST.genre===g[0]?" on":""}" data-g="${g[0]}">${g[1]}</button>`).join("")}</div></div>
+    <label class="opt"><input type="checkbox" id="dl" ${ST.deadline?"checked":""}> 締切あり（1枚${LIMIT}秒）</label>
+    <button class="pk" id="go" style="font-size:20px">はじめる</button>
+  </div>`);
+  app.querySelectorAll("[data-g]").forEach(b=>b.onclick=()=>{ST.genre=b.dataset.g;app.querySelectorAll("[data-g]").forEach(x=>x.classList.toggle("on",x===b))});
+  $("#go").onclick=()=>{ST.deadline=$("#dl").checked;loadPack(ST.genre);intro(0)};
+}
+
+function monitor(m,panic){
+  const c=panic?" panic":"";
+  if(m&&m.k)return scr(m,c);
+  if(Array.isArray(m))return `<div class="mon${c}">${m.map(x=>`<div>${esc(x)||"&nbsp;"}</div>`).join("")}</div>`;
+  if(m==="build")return `<div class="mon"><div>&gt; build --release</div><div>✔ BUILD SUCCESS</div><div>『${GAME}』 v1.0</div></div>`;
+  if(m==="check")return `<div class="mon"><div>イラスト納品フォルダを確認中<span class="dots"></span></div><div>担当イラストレーター：${esc(ILL)}</div></div>`;
+  if(m==="nf")return `<div class="mon nf${c}"><b>404</b><div>@${esc(ILL)}</div><strong>このアカウントは存在しません</strong><div>NOT FOUND</div></div>`;
+  if(m==="kari")return `<div class="mon"><svg viewBox="0 0 120 90" width="46%" aria-label="開発者が描いた仮の絵"><rect width="120" height="90" fill="#fff"/><g fill="none" stroke="#333" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">${KSVG}</g><text x="60" y="88" font-size="8" text-anchor="middle" fill="#999">${esc(KLAB)}</text></svg><div>※開発者が描いた仮素材</div></div>`;
+  return `<div class="mon"><div>イラスト：未納 ×${SCENES.length}</div><div class="frames">${SCENES.map(s=>`<div>${s.name}</div>`).join("")}</div></div>`;
+}
+function mw(who,t){return `<div class="mw" id="mw">${who?`<span class="who">${esc(who)}</span>`:""}<p>${esc(t)}</p><span class="nx">▼</span></div>`}
+
+function intro(i){
+  if(i>=INTRO.length){brief(0);return}
+  const s=INTRO[i];
+  show(`<div class="stage" id="stg">${monitor(s.m,s.panic)}<span class="cap">${esc(CAP)}</span></div>${mw(s.who,s.t)}
+    <p class="small" style="text-align:center;margin:10px auto 0">クリック / Enter で進む　<button class="sub" id="skip">スキップ</button></p>`);
+  const next=()=>intro(i+1);
+  $("#stg").onclick=next;$("#mw").onclick=next;keyNext=next;
+  $("#skip").onclick=e=>{e.stopPropagation();brief(0)};
+}
+
+function brief(i){
+  const s=SCENES[i];
+  show(`<div class="panel center">
+    <span class="tag">納品 ${i+1} / ${SCENES.length}：${s.name}</span>
+    <p class="odai">${esc(s.odai)}</p>
+    ${s.twist?`<p><span class="tw">追加オーダー：${esc(s.twist)}</span></p>`:""}
+    <div style="width:100%;text-align:left"><p class="small">このシーンのセリフ</p>${s.lines.map(l=>`<div class="quote">${l[0]?`<b>${esc(l[0])}</b>`:""}${esc(l[1])}</div>`).join("")}</div>
+    <div class="quote" style="width:100%;text-align:left"><b>開発者</b>${esc(pick(QUIPS))}</div>
+    <p class="small">本来の担当：<b style="color:var(--cream)">${esc(ILL)}</b> → 代打：あなた</p>
+    <button class="pk" id="go">${ST.deadline?`描く！（${LIMIT}秒）`:"描く！"}</button>
+  </div>`);
+  $("#go").onclick=()=>draw(i);keyNext=()=>draw(i);
+}
+
+/* ===== お絵かき ===== */
+const COLORS=["#1b1730","#ffffff","#e53935","#ff8a3d","#ffd23f","#4caf50","#2aa4e6","#3949ab","#9c5fd1","#ff8fb8","#8d5a3a","#f6c9a0","#9e9e9e"];
+const TOOLS=[["pen","ペン"],["marker","マーカー"],["pencil","えんぴつ"],["spray","スプレー"],["eraser","消しゴム"],["fill","バケツ"],["pick","スポイト"]];
+function draw(i){
+  const s=SCENES[i],W=640,H=400;
+  show(`<div><span class="tag">${i+1} / ${SCENES.length}</span> <b style="color:var(--yel)">${esc(s.odai)}</b>${s.twist?` <span class="tw">追加オーダー：${esc(s.twist)}</span>`:""}
+    <div class="lines"><span class="small">このシーンのセリフ</span>${s.lines.map(l=>`<div class="quote">${l[0]?`<b>${esc(l[0])}</b>`:""}${esc(l[1])}</div>`).join("")}</div>
+    ${ST.deadline?`<div class="bar"><i id="tb"></i></div>`:`<div style="height:8px"></div>`}
+    <div class="cvw"><canvas id="cv" width="${W}" height="${H}" aria-label="お絵かきキャンバス"></canvas><canvas id="ov" width="${W}" height="${H}" aria-hidden="true"></canvas></div>
+    <div class="tools" id="cols">${COLORS.map((c,k)=>`<button class="sw${k===0?" on":""}" data-c="${c}" style="background:${c}" aria-label="色 ${c}"></button>`).join("")}
+      <label class="cp">好きな色 <input type="color" id="cp" value="#1b1730" aria-label="好きな色を選ぶ"></label></div>
+    <div class="tools">${TOOLS.map((t,k)=>`<button class="tb${k===0?" on":""}" data-t="${t[0]}">${t[1]}</button>`).join("")}</div>
+    <div class="tools">
+      <label class="sl">太さ <input type="range" id="sz" min="1" max="60" value="8"><output id="szv">8</output></label>
+      <label class="sl">濃さ <input type="range" id="op" min="10" max="100" step="5" value="100"><output id="opv">100%</output></label>
+      <button class="tb" id="undo">元に戻す</button><button class="tb" id="redo">やり直す</button><button class="tb" id="clear">全消し</button>
+      <span class="sp"></span><button class="pk" id="done">納品する</button>
+    </div></div>`);
+  const cv=$("#cv"),ctx=cv.getContext("2d",{willReadFrequently:true}),ov=$("#ov"),octx=ov.getContext("2d");
+  ctx.fillStyle="#fff";ctx.fillRect(0,0,W,H);
+  let tool="pen",color=COLORS[0],size=8,alpha=1,drawing=false,dirty=false,last=null,lastMid=null,strokes=0;const used=new Set(),tused=new Set(),undo=[],redo=[];let undoN=0;
+  const t0=Date.now();
+  const pos=e=>{const r=cv.getBoundingClientRect();return{x:(e.clientX-r.left)*W/r.width,y:(e.clientY-r.top)*H/r.height}};
+  const snap=()=>{try{return ctx.getImageData(0,0,W,H)}catch(e){return null}};
+  const push=()=>{const im=snap();if(im){undo.push(im);if(undo.length>20)undo.shift()}redo.length=0};
+  const rgb=h=>{const n=parseInt(h.slice(1),16);return[n>>16,n>>8&255,n&255]};
+  const hex=(r,g,b)=>"#"+[r,g,b].map(v=>v.toString(16).padStart(2,"0")).join("");
+  function flood(x,y,hx){
+    x=clamp(Math.floor(x),0,W-1);y=clamp(Math.floor(y),0,H-1);
+    const im=ctx.getImageData(0,0,W,H),d=im.data,c=rgb(hx),i0=(y*W+x)*4,t=[d[i0],d[i0+1],d[i0+2]];
+    if(Math.abs(t[0]-c[0])+Math.abs(t[1]-c[1])+Math.abs(t[2]-c[2])<60)return;
+    const m=(px,py)=>{const k=(py*W+px)*4;return Math.abs(d[k]-t[0])<48&&Math.abs(d[k+1]-t[1])<48&&Math.abs(d[k+2]-t[2])<48};
+    const st=[x,y];
+    while(st.length){let py=st.pop(),px=st.pop();
+      while(px>=0&&m(px,py))px--;px++;let up=false,dn=false;
+      for(;px<W&&m(px,py);px++){const k=(py*W+px)*4;d[k]=c[0];d[k+1]=c[1];d[k+2]=c[2];d[k+3]=255;
+        if(py>0){const a=m(px,py-1);if(a&&!up){st.push(px,py-1);up=true}else if(!a)up=false}
+        if(py<H-1){const a=m(px,py+1);if(a&&!dn){st.push(px,py+1);dn=true}else if(!a)dn=false}}}
+    ctx.putImageData(im,0,0);
+  }
+  const commit=()=>{if(!dirty)return;ctx.globalAlpha=alpha;ctx.drawImage(ov,0,0);ctx.globalAlpha=1;octx.clearRect(0,0,W,H);dirty=false};
+  const ink=()=>tool==="eraser"?"#ffffff":color;
+  const spray=p=>{octx.fillStyle=ink();const n=Math.ceil(size*1.6)+6,R=size*1.3+3;for(let k=0;k<n;k++){const a=Math.random()*6.283,r=Math.sqrt(Math.random())*R;octx.fillRect(p.x+Math.cos(a)*r,p.y+Math.sin(a)*r,1.4,1.4)}};
+  const seg=(a,b)=>{
+    octx.strokeStyle=octx.fillStyle=ink();octx.globalAlpha=1;
+    if(tool==="spray"){spray({x:(a.x+b.x)/2,y:(a.y+b.y)/2});spray(b)}
+    else if(tool==="pencil"){octx.lineCap="round";octx.lineWidth=Math.max(1,size*.3);
+      for(let k=0;k<3;k++){const j=size*.28,ox=(Math.random()-.5)*j*2,oy=(Math.random()-.5)*j*2;octx.globalAlpha=.35+Math.random()*.4;octx.beginPath();octx.moveTo(a.x+ox,a.y+oy);octx.lineTo(b.x+ox,b.y+oy);octx.stroke()}octx.globalAlpha=1}
+    else if(tool==="marker"){octx.lineCap="square";octx.lineJoin="bevel";octx.lineWidth=size*1.6;octx.beginPath();octx.moveTo(a.x,a.y);octx.lineTo(b.x,b.y);octx.stroke()}
+    else{octx.lineCap=octx.lineJoin="round";octx.lineWidth=tool==="eraser"?size*2:size;const mid={x:(a.x+b.x)/2,y:(a.y+b.y)/2};
+      octx.beginPath();octx.moveTo(lastMid.x,lastMid.y);octx.quadraticCurveTo(a.x,a.y,mid.x,mid.y);octx.stroke();lastMid=mid}
+    dirty=true};
+  const setColor=(c,fromSw)=>{color=c;if(tool==="eraser"||tool==="pick")setTool("pen");app.querySelectorAll("[data-c]").forEach(x=>x.classList.toggle("on",x.dataset.c===c));if(!fromSw)try{$("#cp").value=c}catch(e){}};
+  const setTool=t=>{tool=t;app.querySelectorAll("[data-t]").forEach(x=>x.classList.toggle("on",x.dataset.t===t));
+    if(t==="marker"&&alpha===1)setAlpha(50);if(t==="pen"&&alpha===.5)setAlpha(100)};
+  const setAlpha=v=>{alpha=v/100;$("#op").value=v;$("#opv").textContent=v+"%"};
+  cv.addEventListener("pointerdown",e=>{e.preventDefault();try{cv.setPointerCapture(e.pointerId)}catch(_){}
+    const p=pos(e);
+    if(tool==="pick"){try{const d=ctx.getImageData(clamp(p.x|0,0,W-1),clamp(p.y|0,0,H-1),1,1).data;setColor(hex(d[0],d[1],d[2]))}catch(_){}return}
+    push();strokes++;tused.add(tool);
+    if(tool==="fill"){flood(p.x,p.y,color);used.add(color);return}
+    if(tool!=="eraser")used.add(color);
+    drawing=true;last=lastMid=p;ov.style.opacity=alpha;
+    if(tool==="spray")seg(p,p);else if(tool==="pen"||tool==="eraser"){octx.fillStyle=ink();octx.beginPath();octx.arc(p.x,p.y,(tool==="eraser"?size*2:size)/2,0,6.283);octx.fill();dirty=true}
+    else seg(p,{x:p.x+.5,y:p.y+.5})});
+  cv.addEventListener("pointermove",e=>{if(!drawing)return;const p=pos(e);seg(last,p);last=p});
+  const up=()=>{if(!drawing)return;drawing=false;commit()};cv.addEventListener("pointerup",up);cv.addEventListener("pointercancel",up);
+  app.querySelectorAll("[data-c]").forEach(b=>b.onclick=()=>setColor(b.dataset.c,true));
+  $("#cp").oninput=e=>setColor(e.target.value,true);
+  app.querySelectorAll("[data-t]").forEach(b=>b.onclick=()=>setTool(b.dataset.t));
+  $("#sz").oninput=e=>{size=+e.target.value;$("#szv").textContent=size};
+  $("#op").oninput=e=>setAlpha(+e.target.value);
+  $("#undo").onclick=()=>{const im=undo.pop();if(im){undoN++;const cur=snap();if(cur)redo.push(cur);ctx.putImageData(im,0,0)}};
+  $("#redo").onclick=()=>{const im=redo.pop();if(im){const cur=snap();if(cur)undo.push(cur);ctx.putImageData(im,0,0)}};
+  $("#clear").onclick=()=>{push();ctx.fillStyle="#fff";ctx.fillRect(0,0,W,H)};
+  let sent=false;
+  const submit=to=>{if(sent)return;sent=true;clearInterval(timer);drawing=false;commit();
+    let cover=0,dom="",box=null,bw=0,bh=0,cx=null,cy=null;try{const d=ctx.getImageData(0,0,W,H).data;let n=0,tot=0,r=0,g=0,b=0,x0=W,y0=H,x1=0,y1=0,sx=0,sy=0;
+      for(let k=0;k<d.length;k+=16){tot++;if(d[k]<245||d[k+1]<245||d[k+2]<245){n++;r+=d[k];g+=d[k+1];b+=d[k+2];const px=k/4,X=px%W,Y=(px-X)/W;sx+=X;sy+=Y;if(X<x0)x0=X;if(X>x1)x1=X;if(Y<y0)y0=Y;if(Y>y1)y1=Y}}
+      cover=n/tot;if(n){bw=(x1-x0+1)/W;bh=(y1-y0+1)/H;box=bw*bh;cx=sx/n/W;cy=sy/n/H;r/=n*255;g/=n*255;b/=n*255;const mx=Math.max(r,g,b),mn=Math.min(r,g,b),l=(mx+mn)/2,dd=mx-mn,sat=dd?dd/(1-Math.abs(2*l-1)):0;
+        let h=0;if(dd){h=mx===r?((g-b)/dd)%6:mx===g?(b-r)/dd+2:(r-g)/dd+4;h=(h*60+360)%360}
+        dom=l<.2?"黒":sat<.15?(l>.75?"白っぽい色":"灰色"):h<15?"赤":h<45?(l<.4?"茶色":"オレンジ"):h<70?"黄色":h<170?"緑":h<200?"水色":h<260?"青":h<300?"紫":h<345?"ピンク":"赤"}}catch(e){}
+    const art={url:cv.toDataURL("image/jpeg",.85),blob:null,stats:{cover,dom,box,bw,bh,cx,cy,colors:used.size,strokes,tools:Array.from(tused),undo:undoN,timeout:!!to,sec:Math.round((Date.now()-t0)/1000)},ev:null};
+    ST.arts[i]=art;
+    const go=()=>judge(i);
+    try{cv.toBlob(b=>{art.blob=b;go()},"image/jpeg",.85)}catch(e){go()}};
+  $("#done").onclick=()=>submit(false);
+  if(ST.deadline){const tb=$("#tb");timer=setInterval(()=>{const left=LIMIT-(Date.now()-t0)/1000;
+    tb.style.width=clamp(left/LIMIT*100,0,100)+"%";tb.classList.toggle("hot",left<15);if(left<=0)submit(true)},250)}
+}
+
+/* ===== 講評 ===== */
+const PC={
+ "辛口":[["……納品物が見当たらないんだが？","キャンバスの白さだけは完璧だ。"],["ラフの手前の、さらに手前だね。でも締切だ、採用。","……線を引いた、という事実は認めよう。"],["味はある。味しかない。でも嫌いじゃない。","下手だ。だが目が離せない。くやしい。"],["ふむ、伝わる。認めたくないが伝わる。","悪くない。……いまのは褒め言葉だ、聞き流すな。"],["……うまいじゃないか。最初から君に頼めばよかった。","文句のつけようがない。文句が仕事なのに困る。"]],
+ "激甘":[["白！ 潔い！ 余白の美！ 天才！","なにもないのに 伝わってくる〜！ すごい〜！"],["線が生きてる〜！ 生まれたての線〜！ えらい！","この一本の線、だれにも まねできないよ〜！"],["かわいい〜！ 何かわからないけど かわいい〜！","味のかたまり！ 味の宝石箱！"],["すごいすごい！ ちゃんと伝わるよ！ 100点あげたい！","見て見てみんな！ うちの子が描いたの！"],["えっプロ？ プロの方ですか？ サインください！","泣いちゃう…うますぎて泣いちゃう…"]],
+ "関西弁":[["なんも描いてへんやないかい！","白いなあ！ 雪国か！"],["なんやこれ！ ……いや、ほんまに なんやこれ！","これで納品するんかい！ ……するんやな、ええ度胸や。"],["味あるなあ。味しかないけどな！","ヘタやけど なんか好きやわ。なんでやろ。"],["おっ、わかるわかる。やるやん自分。","ええやん ええやん、ちゃんと わかるで。"],["うまっ！ なんでイラストレーター雇ってたんやろ！","これ タダで描かせて ええんか！？ ギャラ出したり！"]],
+ "武士":[["白紙とは……斬新、いや、切腹ものでござる。","無の境地……いや、ただの白紙にござるな。"],["まだ修行が足りぬ。されど締切は待たぬ、採用いたす。","筆に迷いが見える。されど逃げなかった、そこは褒めよう。"],["荒削りなれど、気迫は伝わったでござる。","拙いが、勢いは槍のごとし。"],["うむ、見事。お題がしかと見えるでござる。","よき絵じゃ。殿もお喜びになろう。"],["天晴れ！ そなた、絵師として召し抱えたい。","これぞ名筆。城の襖に描いてもらいたい。"]],
+ "ポエマー":[["白……それは、まだ名前のない朝。","なにも描かない、という選択。風が吹いている。"],["迷いの線。けれど迷いもまた、旅。","ひとすじの線。それは、はじまりの音。"],["不揃いな線たちが、小さく歌っている。","下手という名の、やさしい雨。"],["伝わるよ。きみの心の輪郭が、ここに。","色と線が、手をつないで歩いている。"],["ああ……これは絵ではない。祈りだ。","この絵の前では、言葉が靴をぬぐ。"]],
+ "熱血":[["描いてない！？ 気持ちで負けるな！！","白紙！？ まだ試合は終わってないぞ！！"],["下手でもいい！！ 腕を振りきったか！？ よし採用！！","線が少ない！！ だが引いた線は逃げてない！！"],["いいぞ！！ 荒いが魂は入ってる！！","荒い！！ 熱い！！ それでいい！！"],["伝わった！！ 胸に来たぞ！！ ナイスファイト！！","よく描いた！！ グラウンド10周…は免除だ！！"],["完璧だ！！ 優勝！！ 胴上げだ！！","感動した！！ 俺は今、泣いている！！"]],
+ "低血圧":[["……なにもない。……まあ、いいか。","……しろい。……まぶしい。"],["……うん。……あるね、線が。","……線だ。……がんばったね。たぶん。"],["……きらいじゃない。……ねむい。","……へん。……でも、すき。"],["……あ、わかる。……いいんじゃない。","……いいね。……起きててよかった。"],["……うま。……目がさめた。ちょっとだけ。","……すご。……あした、もう一回見る。"]],
+ "意識高い":[["ブランク・キャンバス戦略？ リスクが高すぎるね。","アウトプットがゼロ。まずはコミットしよう。"],["MVPとしてはアリ。ブラッシュアップは次のスプリントで。","ファーストドラフトとしては…うん、ドラフトだね。"],["ユニークなバリューを感じる。ニッチだけど刺さる層はいる。","粗いけどエッジは立ってる。ここがコアバリューかな。"],["コンセプトがクリアに伝わる。グッドなアウトプットだ。","ユーザーに刺さるビジュアルだ。KPIは達成。"],["これはゲームチェンジャー。君、うちとアライアンスしない？","イノベーションだ。このクリエイティブはスケールするよ。"]]
+};
+const GN={fantasy:["スライム","折れた伝説の剣","宝箱","ドラゴンのしっぽ"],love:["ハート","制服のリボン","下駄箱の手紙","夕焼け"],horror:["おばけ","ひとだま","古井戸","呪いのこけし"],mystery:["虫めがね","足あと","あやしい影","消えた証拠"],
+ work:["書類の山","タイムカード","コーヒーのしみ","上司"],heart:["入道雲","麦わら帽子","自転車","夏の思い出"],sf:["UFO","ロボのうで","小さい惑星","光線"],jidai:["ちょんまげ","手裏剣","お城の屋根","だんご"],
+ animal:["どんぐり","しっぽ","肉球","まるい生きもの"],gourmet:["目玉焼き","湯気","謎の煮こみ","おにぎり"],sports:["汗","ボール","はちまき","根性"],music:["音符","マイク","謎の楽器","ミラーボール"]};
+const tierOf=sc=>sc<10?0:sc<35?1:sc<60?2:sc<80?3:4;
+function feat(st){const blank=st.cover<.004;return{blank,small:!blank&&st.box!=null&&st.box<.06,full:st.cover>.5,scribble:st.strokes>50&&st.cover<.12,tall:!blank&&st.bh>st.bw*1.5,wide:!blank&&st.bw>st.bh*1.8,
+  pos:blank||st.cx==null?"":st.cx<.33?"左":st.cx>.67?"右":st.cy<.33?"上":st.cy>.67?"下":""}}
+function twistOK(st,tw){if(!tw||st.cover<.004)return null;const d=st.dom;
+  if(tw==="3色以内で")return st.colors<=3;if(tw==="暖色だけで")return["赤","オレンジ","黄色","ピンク","茶色"].includes(d);if(tw==="寒色だけで")return["青","水色","紫","緑"].includes(d);
+  if(tw==="ドアップで")return st.box>=.55;if(tw==="ひきの構図で")return st.box<=.45;if(tw==="とにかく大胆に")return st.cover>=.25;return null}
+function fallbackEval(a,s){
+  const st=a.stats,f=feat(st),dom=st.dom||"なぞ",nm=s?s.name:"絵",tw=s?s.twist:"",ok=twistOK(st,tw);
+  let sc=Math.round(12+Math.min(35,st.cover*130)+Math.min(24,st.colors*6)+Math.min(20,st.strokes*.7)+(Math.random()*10-5));
+  if(f.small)sc-=8;if(ok===true)sc+=6;if(ok===false)sc-=6;if(f.blank)sc=Math.round(Math.random()*5);sc=clamp(sc,0,94);
+  const noun=pick((GN[GKEY]||[]).concat(["じゃがいも","雲","謎の生命体","毛玉","おもち","影","やる気","風"]));
+  let pool=null;
+  if(f.blank)pool=["白紙（哲学的）","雪原","まだ見ぬ傑作","空気","ホワイトアウト","透明な"+nm];
+  else if(f.small)pool=["遠くにいる"+nm,"米粒サイズの"+nm,"画面のすみの小さな何か","アリの視点で見た"+nm];
+  else if(f.full)pool=[dom+"一色の世界",dom+"に塗りつぶされた情熱","ほぼ"+dom,dom+"の壁",dom+"の海にしずむ"+noun];
+  else{const sp=[];if(f.scribble)sp.push(["もじゃもじゃ","からまった毛糸","嵐の中の"+nm,"落書き帳の3ページ目"]);if(f.tall)sp.push(["細長い"+noun,"立っている"+noun,"塔のような"+nm]);
+    if(f.wide)sp.push(["横たわる"+noun,"地平線と"+noun,"寝ている"+nm]);if(f.pos)sp.push([f.pos+"に寄りすぎた"+nm,f.pos+"のほうにいる"+noun]);
+    pool=sp.length&&Math.random()<.6?pick(sp):[dom+"っぽい"+noun,"たぶん"+nm,nm+"……のような気配","勢いのある"+dom+"の何か","夢で見た"+nm,dom+"の"+noun+"と、あと何か",noun+"を持った"+nm,nm+"の"+dom+"バージョン",noun+"になりかけの"+nm]}
+  let cm=pick((PC[AD[1]]||PC["辛口"])[tierOf(sc)]);
+  if(!f.blank&&Math.random()<.75){const ex=[],tu=st.tools||[];
+    if(st.colors>=5)ex.push("色を"+st.colors+"色も使ったのは見逃してない。");if(st.colors===1)ex.push(dom+"一本で勝負する姿勢、覚えておく。");
+    if(st.sec<25)ex.push(st.sec+"秒で出す度胸は買う。");if(st.timeout)ex.push("締切ぎりぎりまで粘ったのは伝わった。");
+    if(f.full)ex.push("塗りの面積だけは一人前。");if(st.strokes>60)ex.push("線の数に執念を感じる。");
+    if(tu.includes("spray"))ex.push("スプレーの使い方に こだわりを感じる。");if(tu.includes("fill"))ex.push("バケツでどーんと塗る思いきり、きらいじゃない。");if(tu.includes("pencil"))ex.push("えんぴつのかすれが いい味だ。");if(tu.includes("marker"))ex.push("マーカーの重ね方が おもしろい。");if(tu.includes("eraser"))ex.push("消しゴムのあとに、迷いと誠実さが見える。");
+    if(f.tall)ex.push("縦に長いね。のびのびしてる。");if(f.wide)ex.push("横に広い構図、思いきったね。");if(st.strokes<=6&&st.cover<.3)ex.push("線の少なさは、自信のあらわれと受け取った。");if(st.cover<.03)ex.push("余白を信じすぎている。");
+    if(st.undo>=5)ex.push("『元に戻す』を"+st.undo+"回押した粘りも評価する。");if(f.pos)ex.push("ただ、ちょっと"+f.pos+"に寄ってる。");if(f.small)ex.push("もう少し大きく描いてもバチは当たらない。");
+    if(ok===true)ex.push("追加オーダーの『"+tw+"』、ちゃんと守れてる。");if(ok===false)ex.push("追加オーダーの『"+tw+"』は……忘れてた？");
+    if(ex.length)cm+=" "+pick(ex)}
+  return{looks_like:pick(pool),score:sc,comment:cm,ai:false};
+}
+async function judge(i){
+  const a=ST.arts[i],s=SCENES[i];
+  show(`<div class="jg"><div><img src="${a.url}" alt="あなたが描いた「${esc(s.name)}」"><p class="small" style="margin-top:6px">お題：${esc(s.odai)}</p></div>
+    <div class="panel" id="res"><span class="tag">アートディレクター　${esc(AD[1])}タイプ</span><p style="margin-top:10px;font-weight:800">確認中<span class="dots"></span></p><p class="small">ふむ……これは……</p></div></div>`);
+  const tok=ST.tok;let ev;
+  try{
+    if(!a.blob)throw new Error("no blob");
+    const r=await withTimeout(askAI(`あなたはインディーゲーム開発チームの、${AD[0]}アートディレクターです。イラストレーターが音信不通になったため、素人がマウスや指で${ST.deadline?LIMIT+"秒以内に":""}急いで描いたイラストが届きました。
+ゲーム：『${GAME}』（${GENRE}）
+依頼したお題：「${s.odai}」${s.twist?`（追加オーダー：${s.twist}）`:""}
+このシーンのセリフ：${s.lines.map(l=>(l[0]?l[0]+"「":"「")+l[1]+"」").join(" ")}
+添付の絵を見て、次のJSONだけを返してください。
+{"looks_like":"正直に何に見えるか（20字以内）","score":0から100の整数,"comment":"あなたのキャラ（${AD[1]}）らしい口調での、ユーモアのある講評（70字以内・日本語）"}
+採点基準：お題が伝わるか、味や勢いがあるか、手を抜いていないか。素人の絵なので技術より伝わり方を重視。白紙やほぼ白紙は5点以下。`,a.blob?[a.blob]:null),45000);
+    if(!a.blob)throw new Error("no blob");
+    ev={looks_like:String(r.looks_like||"？").slice(0,40),score:clamp(Math.round(Number(r.score))||0,0,100),comment:String(r.comment||"").slice(0,200),ai:true};
+  }catch(e){ev=fallbackEval(a,s)}
+  a.ev=ev;if(tok!==ST.tok)return;
+  const last=i===SCENES.length-1;
+  $("#res").innerHTML=`<span class="tag">アートディレクター　${esc(AD[1])}タイプ</span>
+    <p class="small" style="margin-top:10px">これは……</p><p style="font-size:20px;font-weight:900">「${esc(ev.looks_like)}」に見える</p>
+    <div class="score" style="margin-top:8px">${ev.score}<small> / 100</small></div><div class="meter"><i style="width:${ev.score}%"></i></div>
+    <div class="quote">${esc(ev.comment)}</div>
+    <div style="margin-top:14px;text-align:right"><button class="pk" id="nx">${last?"ゲームを完成させる！":"次のイラストへ"}</button></div>`;
+  const next=()=>last?play(0,0):brief(i+1);
+  $("#nx").onclick=next;keyNext=next;
+}
+
+/* ===== 完成したゲームを再生 ===== */
+function play(si,li){
+  if(si>=SCENES.length){release();return}
+  const s=SCENES[si],l=s.lines[li],a=ST.arts[si];
+  show(`<p class="pre" style="text-align:center;margin-bottom:8px">▶ 完成版プレイ：『${GAME}』　イラスト：あなた ／ ${esc(ILL)}の代打</p>
+    <div class="stage" id="stg"><img src="${a.url}" alt="${esc(s.name)}のイラスト"><span class="cap">${esc(s.name)}</span></div>${mw(l[0],l[1])}
+    <p class="small" style="text-align:center;margin:10px auto 0">クリック / Enter で進む　<button class="sub" id="skip">発売へスキップ</button></p>`);
+  const next=()=>li+1<s.lines.length?play(si,li+1):play(si+1,0);
+  $("#stg").onclick=next;$("#mw").onclick=next;keyNext=next;
+  $("#skip").onclick=e=>{e.stopPropagation();release()};
+}
+
+/* ===== 結果を画像にして保存 ===== */
+let dlP=null;
+function getDL(){if(!dlP)dlP=(async()=>{try{if(!window.claude||typeof window.claude.use!=="function")return null;return await window.claude.use("downloads")}catch(e){return null}})();return dlP}
+function loadImg(src){return new Promise(res=>{const im=new Image();im.onload=()=>res(im);im.onerror=()=>res(null);im.src=src})}
+async function resultImage(r,avg){
+  const W=1200,P=48,F='"Hiragino Maru Gothic ProN","Yu Gothic","Meiryo","Noto Sans JP",sans-serif';
+  const mc=document.createElement("canvas").getContext("2d");
+  const wrap=(t,font,max)=>{mc.font=font;const out=[];let line="";for(const ch of String(t)){if(ch==="\n"){out.push(line);line="";continue}if(mc.measureText(line+ch).width>max&&line){out.push(line);line=ch}else line+=ch}if(line)out.push(line);return out.length?out:[""]};
+  const fH=`900 44px ${F}`,fT=`700 26px ${F}`,fN=`800 22px ${F}`,fV=`700 28px ${F}`;
+  const hl=wrap(r.headline,fH,W-P*2-48),vo=r.voices.map(v=>({name:v.name,likes:v.likes,lines:wrap(v.text,fT,W-P*2-40)})),vd=wrap(r.verdict,fV,W-P*2-48);
+  const tw=(W-P*2-16*4)/5,th=Math.round(tw*5/8);
+  let h=P+40+64+(r.award?36:0)+(hl.length*56+48)+28+128+28+(th+62)+36+44+vo.reduce((s,v)=>s+34+v.lines.length*36+22,0)+20+44+(vd.length*40+40)+70;
+  const c=document.createElement("canvas");c.width=W;c.height=h;const x=c.getContext("2d");
+  x.fillStyle="#151226";x.fillRect(0,0,W,h);x.textBaseline="top";
+  const rr=(X,Y,w,hh,rad,fill,stroke)=>{x.beginPath();x.moveTo(X+rad,Y);x.arcTo(X+w,Y,X+w,Y+hh,rad);x.arcTo(X+w,Y+hh,X,Y+hh,rad);x.arcTo(X,Y+hh,X,Y,rad);x.arcTo(X,Y,X+w,Y,rad);x.closePath();if(fill){x.fillStyle=fill;x.fill()}if(stroke){x.strokeStyle=stroke;x.lineWidth=4;x.stroke()}};
+  let y=P;
+  x.fillStyle="#5de0e6";x.font=`800 22px ${F}`;x.fillText("アドベンチャー or アドベンチャ　／　イラスト：あなた",P,y);y+=40;
+  x.fillStyle="#f7f0df";x.font=`900 40px ${F}`;x.fillText("『"+GAME+"』",P-8,y);y+=64;
+  if(r.award){x.fillStyle="#ffd23f";x.font=`800 26px ${F}`;x.fillText("称号："+r.award,P,y-10);y+=36}
+  const hb=hl.length*56+48;rr(P,y,W-P*2,hb,16,"#f7f0df","#1b1730");x.fillStyle="#ff4f8b";x.font=`800 18px ${F}`;x.fillText("GAME NEWS",P+24,y+12);
+  x.fillStyle="#1b1730";x.font=fH;hl.forEach((l,k)=>x.fillText(l,P+24,y+38+k*56));y+=hb+28;
+  const nw=(W-P*2-32)/3;[["レビュー平均",String(r.review_score)],["1か月の販売本数",r.sales.toLocaleString()],["イラスト平均点",String(avg)]].forEach((n,k)=>{const X=P+k*(nw+16);rr(X,y,nw,128,16,"#211c3a","#1b1730");
+    x.textAlign="center";x.fillStyle="#a9a2c7";x.font=`700 20px ${F}`;x.fillText(n[0],X+nw/2,y+14);x.fillStyle="#ffd23f";x.font=`900 60px ${F}`;x.fillText(n[1],X+nw/2,y+46);x.textAlign="left"});y+=128+28;
+  const ims=await Promise.all(ST.arts.map(a=>loadImg(a.url)));
+  ST.arts.forEach((a,k)=>{const X=P+k*(tw+16);rr(X,y,tw,th+62,10,"#211c3a",null);if(ims[k])x.drawImage(ims[k],X,y,tw,th);else{x.fillStyle="#fff";x.fillRect(X,y,tw,th)}
+    x.fillStyle="#f7f0df";x.font=`700 17px ${F}`;x.fillText(SCENES[k].name,X+8,y+th+8);x.fillStyle="#ffd23f";x.font=`900 22px ${F}`;x.fillText(a.ev.score+"点",X+8,y+th+30)});y+=th+62+36;
+  x.fillStyle="#5de0e6";x.font=`800 24px ${F}`;x.fillText("世間の声",P,y);y+=44;
+  vo.forEach(v=>{const bh=34+v.lines.length*36+10;rr(P,y,W-P*2,bh,14,"#211c3a",null);x.fillStyle="#ffd23f";x.font=fN;x.fillText(v.name+"　♥ "+v.likes.toLocaleString(),P+20,y+10);
+    x.fillStyle="#f7f0df";x.font=fT;v.lines.forEach((l,k)=>x.fillText(l,P+20,y+40+k*36));y+=bh+12});
+  y+=20;x.fillStyle="#5de0e6";x.font=`800 24px ${F}`;x.fillText("総評",P,y);y+=44;
+  rr(P,y,W-P*2,vd.length*40+32,14,"#f7f0df",null);x.fillStyle="#1b1730";x.font=fV;vd.forEach((l,k)=>x.fillText(l,P+24,y+16+k*40));
+  return await new Promise(res=>{try{c.toBlob(b=>res(b),"image/png")}catch(e){res(null)}});
+}
+async function saveResult(r,avg){
+  const msg=$("#svmsg"),box=$("#svimg");if(!msg)return;msg.textContent="画像を作っています…";
+  let blob=null;try{blob=await resultImage(r,avg)}catch(e){}
+  if(!$("#svmsg"))return;
+  if(!blob){msg.textContent="画像を作れませんでした。";return}
+  const showInline=t=>{msg.textContent=t;try{box.innerHTML=`<img alt="結果の画像" style="width:100%;border:3px solid var(--ink);border-radius:10px;margin-top:8px" src="${URL.createObjectURL(blob)}">`}catch(e){}};
+  const d=await getDL();
+  if(!d){showInline("この画面では直接保存できないため、下に画像を表示しました。長押し・右クリックで保存できます。");return}
+  try{await d.save({filename:"adventure-result.png",data:blob});msg.textContent="保存しました。"}
+  catch(e){if(e&&e.code==="declined")msg.textContent="保存をキャンセルしました。";else if(e&&e.code==="rate_limited")msg.textContent="少し待ってから、もう一度押してください。";
+    else showInline("直接保存できなかったため、下に画像を表示しました。長押し・右クリックで保存できます。")}
+}
+
+/* ===== 発売 → 世間の声 ===== */
+const GV={fantasy:["冒険より先に、絵のほうが冒険していた","勇者より、絵を描いた人が勇者","この世界観、絵で3割増しでカオス"],love:["告白シーンの絵で恋が冷めかけたけど、セリフで持ち直した","絵のせいで三角関係に見える","ときめきと困惑が同時に来る、新しい恋愛ゲーム"],
+ horror:["ある意味、絵がいちばんこわい","こわいシーンで笑ってしまった。絵のせいで","夜中にやったら、絵が夢に出た"],mystery:["最大の謎は『この絵は何なのか』だった","絵がいちばんの暗号","犯人より先に、絵の正体を推理していた"],
+ work:["働く人の味方のゲーム。絵を描いた人もきっと残業","月曜の朝にやると、ちょっと元気が出る","絵に、納期との戦いのあとが見える"],heart:["絵がゆるいおかげで、よけいに泣けた気がする","なつかしい気持ちになった。絵は見たことない感じだけど","やさしいゲーム。絵もやさしい、たぶん"],
+ sf:["絵が未来すぎて、まだ人類には早い","この絵、宇宙人が描いた設定だと思えば完璧","科学では説明できない絵"],jidai:["この絵、ある意味で国宝","絵巻物として後世にのこしたい","時代考証より、絵の考証が必要"],
+ animal:["どうぶつ…だよね？ うん、どうぶつだと思う。かわいい","子どもに見せたら『これなに？』と聞かれて困った","新種の生きものを見た気がする"],gourmet:["絵を見てもおなかは鳴らなかったが、セリフで鳴った","料理の絵で食欲がなくなり、話で食欲がもどった","夜中にやってはいけない。話のせいで腹がへる"],
+ sports:["絵に勢いだけはある。スポーツだからそれでいい","フォームはめちゃくちゃだが熱さは伝わる","絵の中の全員、たぶん骨が折れてる"],music:["絵から音は聞こえないけど、気持ちは聞こえた","絵のリズム感が独特。変拍子","ジャケットにしたら逆に売れそう"]};
+const VT={
+ best:["「{best}」の絵、ふつうに好き。スクショした","「{best}」で手が止まった。いい意味で","『{bestLook}』にしか見えないのに、なぜか{best}だとわかる。すごい","{best}の1枚だけ急に本気を感じた","「{best}」を待ち受けにしました。{bestScore}点は伊達じゃない","{best}の絵を見るために、もう1周した","「{best}」、額に入れて飾りたい","推しは{best}の絵です。異論は認める"],
+ worst:["{worst}が『{worstLook}』にしか見えなくて、話が入ってこない","「{worst}」のシーン、3回見直した。まだわからない","{worst}……あれは何だったんだろう。今も考えている","『{worstLook}』が出てきた瞬間、麦茶をふいた","「{worst}」だけ別のゲームかと思った","{worst}の絵について、作者と話がしたい","「{worst}」で一回ゲームを閉じて、深呼吸した","{worst}は『{worstLook}』だと割りきったら楽しめた"],
+ ill:["{ill}先生の絵で見たかった気もするが、これはこれで伝説","{ill}さん、今どこにいるんですか。この絵を見てください","{ill}さんが描かなかったおかげで生まれた奇跡","クレジットの『{ill}の代打』で全部察した","{ill}さんのファンです。……今回は、その、おつかれさまでした","代打の人、次回作も描いてほしい。{ill}さんには内緒で"],
+ lo:["絵が…絵が…！ でもなぜか最後までやってしまった","逆に新しい。逆に。","うちの子が『ぼくのほうがうまい』と言っています","買ったことは後悔してない。たぶん","絵を見て笑って、話で泣いた。情緒がおかしくなる","『{game}』、人に説明できないけど忘れられない","バグかと思ったら、絵だった","友だちに見せたら無言になった","これを出す勇気に星5つ","最後まで絵に慣れなかった。それがいい"],
+ mid:["絵は荒いけど味がある。嫌いじゃない","ヘタウマの“ウマ”がもう少しほしい","なんだかんだクリアした。そして2周目に入った","友だちに勧めるか30分悩んで、勧めた","場面ごとに絵柄が違う気がするけど、それも味","『{game}』、じわじわ来る。じわじわ","絵に慣れたころに終わる。ちょうどいい長さ","うまくはない。でも、ちゃんと描こうとしてるのがわかる","セールじゃなくても買ってよかった","手づくり感がすごい。文化祭を思い出した"],
+ hi:["手描きの温かみがすごい。これがインディーの良さ","この絵柄、クセになる。グッズ出してほしい","絵の勢いとセリフが妙に合ってて好き","開発者が全部描いたらしい。すごくない？","エンディングの1枚で普通に泣いた","『{game}』、今年いちばんの掘り出し物","代打って聞いてたのに、ふつうにうまい","絵が良くて、セリフを読むのを忘れてた","画集が出たら買う","この絵で続編をお願いします"],
+ head:{lo:["問題作『{game}』爆誕。絵も評価も大荒れ","『{game}』、絵が話題で検索急上昇","“絵が逆にすごい”『{game}』に困惑の声","『{game}』発売。絵について問い合わせ殺到","伝説の幕開けか。『{game}』の絵に騒然","『{game}』、スクリーンショットが拡散中"],mid:["賛否両論！『{game}』が静かに発売","『{game}』、“味のある絵”でじわじわ拡散","なぜかクセになる『{game}』、口コミで広がる","『{game}』発売。手づくり感に固定ファン","評価まっぷたつ。『{game}』は絵で語られる","『{game}』、ゆるい絵に“じわる”の声"],hi:["手描きの奇跡！『{game}』がじわじわ話題に","無名ADV『{game}』、絵の魅力で高評価","『{game}』、代打イラストがまさかの絶賛","『{game}』好調。絵のファンアートも続々","急きょの代打が大当たり。『{game}』高評価","『{game}』、イラストに称賛の声あいつぐ"]},
+ verdict:{lo:["絵のインパクトだけは誰にも負けなかった。とくに「{worst}」は語り草。次回作ではイラストレーターの連絡先を3つ控えよう。","「{worst}」で笑い、シナリオで泣く。そんな体験は、ここにしかない。","うまいかどうかは問題ではない。「{worst}」を世に出した勇気を、歴史は忘れない。","売上は静かだが、記憶には残った。「{best}」だけは、ちょっと良かった。"],mid:["粗さも含めて愛された一本。「{best}」は多くの人の心に残った。締切に勝ったこと自体が最大の成果。","「{best}」は光っていた。「{worst}」は……見なかったことにしよう。","完璧ではないが、手ざわりがある。「{best}」に、このゲームの良さがつまっている。","絵とシナリオが、不器用に支えあっている。「{best}」はその象徴だった。"],hi:["急場しのぎとは思えない仕上がり。「{best}」の1枚は、このゲームの顔になった。","この絵でなければ売れなかったかもしれない。「{best}」は名場面として語り継がれるだろう。","代打が主役を食った。「{best}」を見るためだけに買う価値がある。","イラストレーター不在という事故が、最高の結果を生んだ。「{best}」は必見。"]},
+ media:{lo:["絵に目をつぶれば名作。目をつぶるとゲームができない。","勇気ある一作。おもに絵が。","スクリーンショットを撮る手が止まらない。別の意味で。","物語は一級品、絵は一級の話題性。","レビューに困った。こんなことは初めてだ。"],mid:["粗いが、愛せる。","手づくりの味わい。好みは分かれるが忘れがたい。","絵のゆるさが、物語のやさしさと合っている。","磨けば光る。磨かなくても少し光っている。","休日の午後にちょうどいい一本。"],hi:["小さな傑作。絵の力が物語を押し上げた。","代打とは思えない完成度。","今年のインディーを語るなら外せない一本。","絵とセリフの幸福な出会い。","もっと評価されるべき、を地で行く作品。"]},
+ outlets:["週刊インディー通信","ゲームのみみ","ADVびより","電脳かわら版","深夜のゲーム帳","ノベルゲーム新報"],
+ names:["ねむいタヌキ","ADV大好きおじさん","mochi_0312","積みゲー崩し隊","週末勇者","レビューの鬼","深夜のコーヒー牛乳","ぽんず","ゲーム実況みならい","となりの田中","絵心ゼロ子","通りすがりの猫派","セーブ忘れた","有給消化中","ノベルゲー研究会","くまさん3号","インディー沼の住人","夜ふかし係長","みかんの皮","はじめてのレビュー","こたつ警備員","二度寝の達人","やきそばパン派","午後の紅茶番長","さんぽ中","ゆるふわ評論家"]
+};
+const shuf=a=>a.slice().sort(()=>Math.random()-.5);
+function artInfo(){const arts=ST.arts;let bi=0,wi=0;arts.forEach((a,k)=>{if(a.ev.score>arts[bi].ev.score)bi=k;if(a.ev.score<arts[wi].ev.score)wi=k});
+  const fill=x=>x.replace(/\{game\}/g,GAME).replace(/\{best\}/g,SCENES[bi].name).replace(/\{worst\}/g,SCENES[wi].name).replace(/\{bestLook\}/g,arts[bi].ev.looks_like).replace(/\{worstLook\}/g,arts[wi].ev.looks_like).replace(/\{bestScore\}/g,arts[bi].ev.score).replace(/\{ill\}/g,ILL);
+  return{arts,bi,wi,fill}}
+function featureVoices(){
+  const arts=ST.arts,out=[],S=arts.map(a=>a.stats),F=S.map(feat),nm=k=>SCENES[k].name;
+  const cnt={};S.forEach(s=>{if(s.dom)cnt[s.dom]=(cnt[s.dom]||0)+1});const top=Object.keys(cnt).sort((a,b)=>cnt[b]-cnt[a])[0];
+  if(top&&cnt[top]>=3)out.push("全体的に"+top+"が多い。作者は"+top+"が好きなんだと思う");
+  let fk=0;S.forEach((s,k)=>{if(s.sec<S[fk].sec)fk=k});if(S[fk].sec<30&&!F[fk].blank)out.push("「"+nm(fk)+"」は"+S[fk].sec+"秒で描かれたらしい。逆にすごい");
+  const sm=F.findIndex(f=>f.small);if(sm>=0)out.push("「"+nm(sm)+"」、小さすぎて虫めがねを出した");
+  const bl=F.findIndex(f=>f.blank);if(bl>=0)out.push("「"+nm(bl)+"」が真っ白だった。演出だと信じたい");
+  const sc=arts.map(a=>a.ev.score);if(Math.max(...sc)-Math.min(...sc)>=40)out.push("絵のうまさが場面ごとにジェットコースター");
+  const has=t=>S.filter(s=>(s.tools||[]).includes(t)).length;
+  if(has("spray")>=2)out.push("スプレーへのこだわりを感じる。そこじゃない気もする");if(has("fill")>=3)out.push("バケツ塗りの思いきりがいい。迷いがない");if(has("pencil")>=2)out.push("えんぴつのかすれた線、あったかくて好き");
+  const tc=S.reduce((x,s)=>x+s.colors,0);if(tc>=22)out.push("色づかいが にぎやか。目がたのしい");if(S.every(s=>s.colors<=1)&&!F.every(f=>f.blank))out.push("ほぼ1色で描ききる潔さ。逆におしゃれ");
+  if(S.filter(s=>s.timeout).length>=3)out.push("どの絵からも『時間がない！』という声が聞こえる");
+  const fu=F.findIndex(f=>f.full);if(fu>=0)out.push("「"+nm(fu)+"」の塗りの圧がすごい。画面から出てきそう");
+  const tl=F.findIndex(f=>f.tall);if(tl>=0)out.push("「"+nm(tl)+"」が妙に縦長で、スマホを縦にした");
+  const wd=F.findIndex(f=>f.wide);if(wd>=0)out.push("「"+nm(wd)+"」が横に長すぎて、首をかたむけた");
+  const ps=F.findIndex(f=>f.pos);if(ps>=0)out.push("「"+nm(ps)+"」の絵が"+F[ps].pos+"に寄ってるの、わざと？ わざとだよね？");
+  if(S.reduce((x,s)=>x+(s.undo||0),0)>=10)out.push("何度も描き直したあとが見える気がする。応援したくなる");
+  const ts=S.reduce((x,s)=>x+s.strokes,0);if(ts>=300)out.push("線の量がすごい。執念を感じる");else if(ts<=20&&!F.every(f=>f.blank))out.push("線が少ない。少ないのに、なぜか伝わる");
+  if(has("marker")>=2)out.push("マーカーの半透明の重なり、きれい");if(has("eraser")>=3)out.push("消しゴムのあとに、迷いと誠実さを見た");
+  if(Object.keys(cnt).length>=4)out.push("場面ごとに色がガラッと変わって、紙芝居みたい");
+  if(sc[0]-sc[sc.length-1]>=30)out.push("最初の絵がいちばん気合い入ってて、だんだん力つきていくのがリアル");if(sc[sc.length-1]-sc[0]>=30)out.push("後半になるほど絵がうまくなっていく。成長物語か");
+  const kept=arts.filter((a,k)=>twistOK(a.stats,SCENES[k].twist)===true).length;if(kept>=2)out.push("細かい注文にちゃんと応えてる絵があって、仕事がていねい");
+  return shuf(out);
+}
+function fallbackVoices(avg){
+  const I=artInfo(),t=avg<35?"lo":avg>=65?"hi":"mid",gen=shuf(VT[t]),fv=featureVoices().slice(0,2);
+  const texts=[pick(VT.best),(I.bi===I.wi||I.arts[I.wi].ev.score>=65)?gen[4]:pick(VT.worst),pick(VT.ill)].concat(shuf(GV[GKEY]||[gen[5],gen[6]]).slice(0,2),fv,gen.slice(0,3-fv.length));
+  const names=shuf(VT.names);
+  return{headline:I.fill(pick(VT.head[t])),review_score:clamp(Math.round(avg*.8+18+Math.random()*8),5,98),sales:Math.round(Math.pow(Math.max(avg,3),2.1)*(1.5+Math.random())+37),
+    voices:shuf(texts.map((x,k)=>({name:names[k],text:I.fill(x),likes:Math.round(Math.random()*Math.max(avg,10)*30+3)}))),verdict:I.fill(pick(VT.verdict[t])),ai:false};
+}
+function extras(avg,review){
+  const S=ST.arts.map(a=>a.stats),F=S.map(feat),t=avg<35?"lo":avg>=65?"hi":"mid",sc=ST.arts.map(a=>a.ev.score),has=k=>S.filter(s=>(s.tools||[]).includes(k)).length;
+  const sum=f=>S.reduce((x,s)=>x+(f(s)||0),0);
+  const kept=ST.arts.filter((a,k)=>twistOK(a.stats,SCENES[k].twist)===true).length,ts=sum(s=>s.strokes),allBlank=F.every(f=>f.blank),C=[];
+  if(avg>=80)C.push("代打の神様","締切の救世主");if(sum(s=>s.colors)>=30)C.push("色彩の暴れん坊");if(S.every(s=>s.colors<=1)&&!F.some(f=>f.blank))C.push("一色入魂");
+  if(sum(s=>s.sec)/S.length<25&&!allBlank)C.push("光速納品賞");if(S.filter(s=>s.timeout).length>=3)C.push("締切の崖っぷち王");if(sum(s=>s.undo)>=15)C.push("『元に戻す』マイスター");
+  if(has("spray")>=3)C.push("スプレー愛好家");if(has("fill")>=3)C.push("バケツ職人");if(has("pencil")>=3)C.push("えんぴつの詩人");if(has("marker")>=3)C.push("マーカーの魔術師");
+  if(Math.max(...sc)-Math.min(...sc)>=50)C.push("むらっ気の天才");if(F.filter(f=>f.pos).length>=3)C.push("片寄りの巨匠");if(F.filter(f=>f.small).length>=2)C.push("ミニチュア作家");if(F.filter(f=>f.full).length>=3)C.push("全面塗りの鬼");
+  if(kept>=3)C.push("注文に強い職人");if(ts>=400)C.push("線の千本ノック");if(ts<=15&&!allBlank)C.push("ひと筆の達人");if(avg>=45&&avg<=55)C.push("ど真ん中の平均点");if(avg<25&&!allBlank)C.push("伝説の画伯");
+  const award=allBlank?"余白の美 大賞":C.length?pick(C):pick(t==="hi"?["期待の代打","頼れるピンチヒッター","遅れてきた新人"]:t==="mid"?["味のある新人","ヘタウマの星","愛され画伯"]:["勇気の人","伸びしろの塊","記憶に残る人"]);
+  const lines=shuf(VT.media[t]),outs=shuf(VT.outlets);if(typeof GM!=="undefined"&&GM[GKEY])lines[2]=pick(GM[GKEY]);
+  return{award,media:[0,1,2].map(k=>({name:outs[k],score:clamp(Math.round(review/10+(Math.random()*2-1)),1,10),text:lines[k]}))};
+}
+/* ===== 追加のバリエーション ===== */
+PERSONAS.push(["孫を見守るおばあちゃんのようにやさしい","おばあちゃん"],["なんでも食べものにたとえる","食いしん坊"],["名探偵のように推理しながら語る","探偵"]);
+PC["おばあちゃん"]=[["あらあら、まっしろねえ。おなかすいてるの？","なにも描いてなくても、えらいよ。来ただけで えらい。"],["まあ、線が引けたのねえ。すごいねえ。","ちょっとだけ描いたのね。むりしなくていいのよ。"],["じょうずじょうず。冷蔵庫に はっておこうね。","なんの絵かは わからないけど、おばあちゃんは すきよ。"],["まあ〜、よく描けてるねえ。おこづかい あげようね。","ちゃんと わかるよ。目が いいんだねえ、この子は。"],["あらまあ！ 絵かきさんに なれるよ、あんた。","ご近所に 見せてまわりたいわあ。"]];
+PC["食いしん坊"]=[["からっぽの皿だね。おかわり以前の問題だ。","白米だけ出された気分。おかずは？"],["味見ていどの量だね。もうひと口ほしい。","うすあじ。素材の味すら まだ遠い。"],["クセの強い珍味。ハマる人はハマる。","見た目は雑だが、屋台のうまさがある。"],["うん、うまい。定食屋の安心感だ。","ちゃんとダシが効いてる。お題の味がする。"],["フルコースだ。デザートまで完璧。","うまい！ おかわり！ 5枚じゃ足りない！"]];
+PC["探偵"]=[["現場には何も残されていない。完全犯罪だ。","白紙……つまり犯人は、描かなかった。"],["手がかりが少なすぎる。だが線は嘘をつかない。","ふむ、これは……迷宮入りの予感がする。"],["謎は多いが、動機は伝わった。『間に合わせたい』だね。","この絵の正体、推理に3日ほしい。"],["謎はすべて解けた。これは、お題どおりの絵だ。","証拠はそろっている。きみはちゃんと描いた。"],["見事だ。この事件、きみの完全勝利だよ。","推理の必要がない。見ればわかる、最高の絵だ。"]];
+(function(){
+  const add=(o,k,a)=>{o[k]=(o[k]||[]).concat(a)};
+  add(GN,"fantasy",["魔法のつえ","ポーションのびん","たいまつ"]);add(GN,"love",["相合い傘","お弁当箱","第二ボタン"]);add(GN,"horror",["ろうそく","お札","黒いかげ"]);add(GN,"mystery",["割れた花びん","名探偵の帽子","あやしい手ぶくろ"]);
+  add(GN,"work",["ふせんの束","残業のあかり","社員証"]);add(GN,"heart",["風鈴","ラムネのびん","夕立"]);add(GN,"sf",["宇宙服","謎のボタン","アンテナ"]);add(GN,"jidai",["巻物","かご","ほら貝"]);
+  add(GN,"animal",["はっぱ","きのこ","ふわふわの毛"]);add(GN,"gourmet",["どんぶり","コック帽","こげたなべ"]);add(GN,"sports",["ゴールテープ","水筒","応援のメガホン"]);add(GN,"music",["ギターっぽい板","スピーカー","紙ふぶき"]);
+  add(GV,"fantasy",["魔王より絵のほうが手ごわい","回復アイテムがほしい。目に"]);add(GV,"love",["ヒロインの顔が毎回ちがうので、全員に恋した","この絵で泣ける自分にびっくりしている"]);
+  add(GV,"horror",["電気を消してやったけど、絵が見えなくなっただけだった","おばけが全然こわくなくて、むしろ友だちになりたい"]);add(GV,"mystery",["絵が最大のミスリード","真相より絵の解釈で友だちと盛り上がった"]);
+  add(GV,"work",["仕事帰りにやると沁みる。絵のゆるさも含めて","この絵、たぶん残業中に描いてる"]);add(GV,"heart",["絵が拙いほど、思い出っぽくて泣ける","子どものころの絵日記を思い出した"]);
+  add(GV,"sf",["未来の技術で、絵だけ現代を下回っている","宇宙は広い。絵の解釈も広い"]);add(GV,"jidai",["歴史の教科書にのせたい。落書きのコーナーに","殿もこの絵には苦笑い"]);
+  add(GV,"animal",["かわいい。なんの動物かは聞かないでほしい","寝る前に子どもと遊んだ。絵で大笑いしてた"]);add(GV,"gourmet",["絵の料理は食べたくないが、話の料理は食べたい","飯テロならぬ絵テロ"]);
+  add(GV,"sports",["選手の関節がありえない方向に曲がってる。それでも勝つ","汗と涙と、あと謎の線"]);add(GV,"music",["音はないのに、絵がうるさい。いい意味で","ライブの熱気より、絵の熱気がすごい"]);
+  add(VT,"best",["「{best}」だけ何回も見てしまう。中毒性がある","{best}の絵、子どもが真似して描いてた","「{best}」は額装レベル。ほかは……まあ、うん","{best}の絵のファンアートを描きました","「{best}」、じっと見てると良さがわかってくる","{best}で{bestScore}点は納得。むしろもっと高くていい"]);
+  add(VT,"worst",["{worst}の絵、説明書がほしい","「{worst}」を見た猫が、そっと部屋を出ていった","{worst}は見る人の心を映す鏡だと思う。わたしには『{worstLook}』に見えた","「{worst}」だけ夢に出てきた","{worst}の絵で、友だちと30分議論した","「{worst}」、上下さかさまにしたら少しわかった"]);
+  add(VT,"ill",["{ill}さんの次回作にも期待しています。描けば、ですが","{ill}さんへ：帰ってきたら、この絵を見て笑ってください","{ill}さんが見たら、たぶん二度見する","{ill}さんの不在を、気合いで埋めた感じがすき"]);
+  add(VT,"lo",["絵のせいで内容を何も覚えていない","説明文に『絵にはご期待ください』とあった。期待の方向が違った","心が疲れたときにやると、どうでもよくなれる","実況向き。ひとりでやると不安になる","こういうのでいいんだよ、とは言いきれない","絵はともかく、最後まで作りきったのがえらい","一周まわって芸術かもしれないと思いはじめた","家族に見られて、何のゲームか説明できなかった"]);
+  add(VT,"mid",["期待しないで買ったら、ちょうどよかった","絵に波がある。でも波があるほうが海っぽい","落書きっぽい絵が、だんだん愛おしくなってくる","1時間で終わるのに、3日くらい思い出してる","もう少し時間があれば、と作者も思っているはず","家族でやって、絵の当てっこになった","絵の評価は分かれるだろうけど、ぼくは好きな側","値段ぶんは笑った"]);
+  add(VT,"hi",["線に迷いがなくて気持ちいい","色の選び方がいい。センスがある","短いけど満足感がすごい","絵を見たくてセリフ送りがゆっくりになる","この人、ほんとうに代打？ 本職では？","友だち5人に勧めた。全員ハマった","一枚絵のたびに手が止まる","続編が出たら発売日に買う"]);
+  add(VT.head,"lo",["『{game}』、“見たことのない絵”がSNSで話題","異色作『{game}』、プレイヤーを困惑のうずに","『{game}』、絵をめぐって議論が白熱"]);
+  add(VT.head,"mid",["『{game}』、ゆるい絵柄にファンじわり","小粒でも味あり。『{game}』が配信開始","『{game}』、“ヘタウマADV”として注目"]);
+  add(VT.head,"hi",["『{game}』、口コミでランキング急上昇","“あの絵がいい”『{game}』に絶賛の声","『{game}』、イラスト目当ての購入者が続出"]);
+  add(VT.verdict,"lo",["技術はなかった。時間もなかった。それでも5枚そろえた。「{worst}」も含めて、胸を張っていい。","伝説は、だいたいこういう所から始まる。「{worst}」の絵は、きっと10年後も語られている。"]);
+  add(VT.verdict,"mid",["うまい絵は世の中にたくさんある。でも「{best}」のような絵は、ここにしかない。","「{worst}」には目をつぶろう。「{best}」があるから、このゲームは愛される。"]);
+  add(VT.verdict,"hi",["「{best}」を筆頭に、5枚すべてに手ざわりがある。次回作も、ぜひこの人に。","締切90秒でこの仕上がり。「{best}」は、偶然ではなく実力だ。"]);
+  add(VT.media,"lo",["万人には勧めない。でも、だれかの一生の思い出になる。","絵の話しかできない。それも才能だ。","遊んだあと、人に話したくなる。おもに絵について。","評価不能。いい意味かどうかも不能。"]);
+  add(VT.media,"mid",["肩の力をぬいて遊べる。絵も肩の力がぬけている。","大作のあいまに、こういう一本がほしかった。","荒さはある。だが、作り手の顔が見える。","小さくて、不格好で、にくめない。"]);
+  add(VT.media,"hi",["イラストが作品の体温を上げている。","短編ADVのお手本のような一本。","絵に引きこまれ、物語に包まれる。","急ごしらえの絵が、ここまで物語に寄りそうとは。"]);
+  VT.outlets.push("月刊ひとりゲーム","ゲームと麦茶","積みゲー日報");
+  VT.names.push("夜食はおにぎり","ひるねの王","となりのペンギン","残業おつかれ隊","三日坊主","おふとん大使","レトロゲー番長","ねこのしっぽ","駅前の鳩","コントローラー2P");
+})();
+const GM={fantasy:["王道の物語に、道なき道を行く絵。","剣と魔法と、自由すぎる筆。"],love:["恋の行方より、絵の行方が気になる。","甘ずっぱさに、絵のしょっぱさが効いている。"],horror:["恐怖と脱力の新しいバランス。","こわさ控えめ、絵のインパクト強め。"],
+ mystery:["謎解きの歯ごたえに、絵のやわらかさ。","最後の謎は、絵の解釈という形でプレイヤーにゆだねられる。"],work:["働くすべての人に。絵は残業のあとの味。","お仕事ADVの新定番。絵は定時で帰った模様。"],heart:["記憶の中の夏は、たしかにこんな絵だった。","拙さが郷愁を呼ぶ、という発見。"],
+ sf:["想像力の果てへ。絵は先に行きすぎた。","センス・オブ・ワンダーを、絵でも味わえる。"],jidai:["歴史の新解釈。おもに絵が。","粋な物語に、破天荒な筆づかい。"],animal:["やさしい世界に、やさしい線。","大人も子どもも、絵で笑える。"],
+ gourmet:["味は文章で、見た目は心で味わう。","読むとおなかがすく。見ると落ち着く。"],sports:["勢いで押しきる。絵も、物語も。","フォームより気持ち。絵もそうだ。"],music:["音のないゲームから、音が聞こえる。","リズムは文章に、ビートは絵に。"]};
+(function(){
+  const add=(o,k,a)=>{o[k]=(o[k]||[]).concat(a)};
+  add(GV,"fantasy",["宝箱の絵が出るたび、中身より絵が気になる","レベルが上がるほど絵に慣れていく。これが成長か","伝説の剣、絵だと ただの棒だった","仲間が増えるたび『この子は何の生きもの？』となる","ファンタジーだからこそ許される絵、という発見"]);
+  add(GV,"love",["絵で顔がわからないぶん、想像でときめける","デートの背景が抽象画で、逆にロマンチック","キュンとする前に『ん？』が来る。でもキュンも来る","ヒロインの髪型がシーンごとに違うのは、乙女心だと思う","恋は盲目というが、絵にも目をつぶれるようになった"]);
+  add(GV,"horror",["こわくなったら絵を見ると落ち着く。新しい安全装置","悲鳴より先に笑い声が出るホラー","おばけの絵がゆるくて、うちの子が名前をつけた","ホラーが苦手な人にこそ勧めたい。理由は絵","暗い画面に浮かぶ謎の絵。それはそれで こわい"]);
+  add(GV,"mystery",["容疑者の見分けがつかないのが最大のトリック","証拠品の絵が何なのか、探偵より先に悩んだ","伏線かと思ったら、絵の線だった","犯人あてより絵あてのほうが難しい","読後感はいい。絵後感は、ふしぎ"]);
+  add(GV,"work",["上司の絵がやけにリアルで胃が痛い","明日も仕事だけど、もう少しだけ遊ぶ","絵の雑さに『わかる、時間ないよね』と共感した","職場の休憩室で流行らせたい","働くことの尊さと、納期のこわさを学んだ"]);
+  add(GV,"heart",["夏休みのにおいがする。絵は自由研究のにおいがする","なんでもない場面で泣いてしまった。絵も なんでもない感じでよかった","うまい絵だったら、ここまで刺さらなかったかも","実家に帰りたくなった","やさしい世界。線もやさしい。よろよろしてるけど"]);
+  add(GV,"sf",["宇宙船の絵が、どう見ても炊飯器","科学考証はさておき、絵の考証をしたい","ロボのデザインが自由すぎて、逆に欲しくなった","未知との遭遇。おもに絵と","光年単位でズレた絵。でも話にはちゃんと着地する"]);
+  add(GV,"jidai",["侍の刀が、ごぼうに見える","この絵、掛け軸にしたら床の間が明るくなりそう","時代劇なのに、絵だけ時代を超えている","殿の顔が毎回ちがう。影武者かもしれない","筆で描いたような味がある。マウスだけど"]);
+  add(GV,"animal",["動物園で見たことのない動物ばかり出てくる","子どもが『このこ ほしい』と言った。どの子かは わからない","耳としっぽがあれば動物、という強い意志を感じる","癒やされた。絵のゆるさも込みで","ぬいぐるみにしてほしい。作る人は大変だろうけど"]);
+  add(GV,"gourmet",["料理の絵が、すべて同じ色","おいしそうかどうかは、想像力しだい","絵のラーメンが のびて見える","見た目より味、を絵で体現したゲーム","空腹のときにやっても安全。絵のおかげで"]);
+  add(GV,"sports",["ボールがどこにあるのか、最後までわからなかった","選手より観客の絵のほうが気合い入ってる","名場面のスローモーションが、絵だと止まって見える。絵だから","汗の表現だけ妙にうまい","熱血すぎて、絵がブレてる。たぶん演出"]);
+  add(GV,"music",["楽器の絵が全部おなじ形。新しい楽器かもしれない","歌はいいのに、絵が口を開けすぎ","ライブシーンの観客が、点。でも熱は伝わる","サビの絵でいちばん笑った","アンコール！ 絵も、もう1枚！"]);
+  add(VT,"lo",["絵を見るたびに元気が出る。なぜだろう","スクショを友だちに送ったら既読スルーされた","説明できない魅力がある。本当に説明できない","子どもの落書きと間違えて消しそうになった","奇書ならぬ、奇ゲー"]);
+  add(VT,"mid",["うまくないのに、ずっと見ていられる","休日に1本だけ遊ぶなら、こういうのがいい","絵の荒さを、セリフがやさしく包んでいる","及第点。でも、及第点のゲームがいちばん記憶に残る","もう一声！ という気持ちで星4つ"]);
+  add(VT,"hi",["余白の使い方がうまい","キャラの表情が生きている","一枚絵が出るたびに声が出た","この値段でこの満足感は ずるい","絵もセリフも、ていねいに作られている"]);
+  add(VT,"best",["「{best}」を見て、買ってよかったと思った","{best}の絵だけ、やけに気持ちが入ってる","「{best}」の構図、じつはすごいのでは"]);
+  add(VT,"worst",["「{worst}」は、想像力のトレーニングになる","{worst}の絵、見るたびに違うものに見える","「{worst}」で親に『それ何のゲーム？』と聞かれた"]);
+  add(VT.head,"lo",["『{game}』、絵のインパクトで深夜の話題に","『{game}』、“これは何？”の声とともに発売"]);
+  add(VT.head,"mid",["『{game}』、地味に売れつづける","『{game}』、ゆるさが評価されロングセラーの気配"]);
+  add(VT.head,"hi",["『{game}』、週末のおすすめ1位に","『{game}』、手描きイラストで新規ファン獲得"]);
+  VT.names.push("押し入れ探検隊","まいにち日曜","麦茶2リットル","うたたね研究員","となりの席の人","ゲームは1日25時間");
+})();
+async function release(){
+  show(`<div class="center"><p class="pre">『${GAME}』発売！</p><h2 style="font-size:26px">世間の声を集計中<span class="dots"></span></h2><p class="small">レビューサイトとSNSを巡回しています</p></div>`);
+  const tok=ST.tok,arts=ST.arts,avg=Math.round(arts.reduce((s,a)=>s+(a.ev?a.ev.score:0),0)/arts.length);
+  let r;
+  try{
+    const x=await withTimeout(askAI(`インディーゲーム『${GAME}』（${GENRE}）が発売されました。シナリオは普通に良い出来ですが、担当するはずだった架空のイラストレーター「${ILL}」が納品しなかったため、イラスト5枚はすべて素人が急いで描いたものです。
+各イラストのお題・アートディレクターの見立て・点数（100点満点）：
+${arts.map((a,k)=>`${k+1}. お題「${SCENES[k].odai}」→「${a.ev.looks_like}」に見える／${a.ev.score}点`).join("\n")}
+イラスト平均点：${avg}点
+この内容に見合った温度感で、発売後の世間の反応を作ってください。次のJSONだけを返してください。
+{"headline":"ゲームメディア風の見出し（30字以内）","review_score":0から100の整数,"sales":発売1か月の販売本数（整数）,"voices":[{"name":"架空のハンドルネーム","text":"SNS投稿風の感想（60字以内）","likes":整数}],"verdict":"総評（80字以内）"}
+voicesは6件。うち1件は「${ILL}」の名前に触れてもよい。絶賛・困惑・ツッコミを混ぜ、具体的なイラスト（何に見えたか）に触れるものを半分以上にする。日本語で、ユーモアはあるが意地悪すぎないこと。実在の人物・作品・企業・サービス名は出さない。`),60000);
+    r={headline:String(x.headline||"").slice(0,80),review_score:clamp(Math.round(Number(x.review_score))||0,0,100),sales:Math.max(0,Math.round(Number(x.sales))||0),
+      voices:(Array.isArray(x.voices)?x.voices:[]).slice(0,8).map(v=>({name:String(v&&v.name||"名無し").slice(0,24),text:String(v&&v.text||"").slice(0,160),likes:Math.max(0,Math.round(Number(v&&v.likes))||0)})),
+      verdict:String(x.verdict||"").slice(0,220),ai:true};
+    if(!r.voices.length)throw new Error("empty");
+  }catch(e){r=fallbackVoices(avg)}
+  if(tok!==ST.tok)return;
+  const ex=extras(avg,r.review_score);r.award=ex.award;
+  const hues=[330,48,185,265,20,140,210,300];
+  show(`<div>
+    <div class="news"><small>GAME NEWS</small><h2>${esc(r.headline)}</h2></div>
+    <div class="nums"><div><small>レビュー平均</small><b>${r.review_score}</b></div><div><small>1か月の販売本数</small><b>${r.sales.toLocaleString()}</b></div><div><small>イラスト平均点</small><b>${avg}</b></div></div>
+    <div class="aw">あなたへの称号　<b>${esc(ex.award)}</b></div>
+    <h3 class="sec">メディアの評価</h3>
+    <div class="voices">${ex.media.map(m=>`<div class="vo"><div class="av" style="background:var(--cream);border-radius:8px;width:auto;padding:0 10px">${m.score}<small style="font-size:11px">/10</small></div><div><b>${esc(m.name)}</b><div>${esc(m.text)}</div></div></div>`).join("")}</div>
+    <h3 class="sec">世間の声</h3>
+    <div class="voices">${r.voices.map((v,k)=>`<div class="vo" style="animation-delay:${k*.12}s"><div class="av" style="background:hsl(${hues[k%8]} 80% 70%)">${esc(v.name.slice(0,1))}</div>
+      <div><b>${esc(v.name)}</b><span>♥ ${v.likes.toLocaleString()}</span><div>${esc(v.text)}</div></div></div>`).join("")}</div>
+    <h3 class="sec">総評</h3><div class="quote">${esc(r.verdict)}</div>
+    <h3 class="sec">あなたの納品物</h3><p class="small">本来の担当：${esc(ILL)}</p>
+    <div class="gal">${arts.map((a,k)=>`<figure><img src="${a.url}" alt="${esc(SCENES[k].name)}"><figcaption>${esc(SCENES[k].name)}：<b>${a.ev.score}点</b><br>「${esc(a.ev.looks_like)}」</figcaption></figure>`).join("")}</div>
+    <div class="center" style="margin-top:18px"><div style="display:flex;gap:12px;flex-wrap:wrap;justify-content:center"><button id="save">結果を画像で保存</button><button class="pk" id="again">もう一度つくる</button></div><p class="small" id="svmsg" aria-live="polite"></p></div><div id="svimg"></div>
+  </div>`);
+  $("#again").onclick=title;
+  $("#save").onclick=()=>saveResult(r,avg);
+}
+
+document.addEventListener("keydown",e=>{if((e.key==="Enter"||e.key===" ")&&keyNext&&!(e.target&&e.target.closest&&e.target.closest("button,input"))){e.preventDefault();keyNext()}});
+title();
+})();
+</script>
+</body>
+</html>
