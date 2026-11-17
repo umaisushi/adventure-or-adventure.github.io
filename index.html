@@ -823,17 +823,98 @@ async function resultImage(r,avg){
   rr(P,y,W-P*2,vd.length*40+32,14,"#f7f0df",null);x.fillStyle="#1b1730";x.font=fV;vd.forEach((l,k)=>x.fillText(l,P+24,y+16+k*40));
   return await new Promise(res=>{try{c.toBlob(b=>res(b),"image/png")}catch(e){res(null)}});
 }
-async function saveResult(r,avg){
-  const msg=$("#svmsg"),box=$("#svimg");if(!msg)return;msg.textContent="画像を作っています…";
-  let blob=null;try{blob=await resultImage(r,avg)}catch(e){}
-  if(!$("#svmsg"))return;
-  if(!blob){msg.textContent="画像を作れませんでした。";return}
-  const showInline=t=>{msg.textContent=t;try{box.innerHTML=`<img alt="結果の画像" style="width:100%;border:3px solid var(--ink);border-radius:10px;margin-top:8px" src="${URL.createObjectURL(blob)}">`}catch(e){}};
+let inFrame=false;try{inFrame=window.self!==window.top}catch(e){inFrame=true}
+async function deliver(blob,filename,what,making){
+  const msg=$("#svmsg"),box=$("#svimg");if(!msg)return;
+  if(!blob){msg.textContent=what+"を作れませんでした。";return}
+  const showInline=t=>{msg.textContent=t;try{box.innerHTML=`<img alt="${what}" style="width:100%;border:3px solid var(--ink);border-radius:10px;margin-top:8px" src="${URL.createObjectURL(blob)}">`}catch(e){}};
   const d=await getDL();
-  if(!d){showInline("この画面では直接保存できないため、下に画像を表示しました。長押し・右クリックで保存できます。");return}
-  try{await d.save({filename:"adventure-result.png",data:blob});msg.textContent="保存しました。"}
+  if(!d){
+    // Claude の公開ページ以外（GitHub Pages や手元）では、ブラウザの通常のダウンロードで直接保存する
+    let ok=false;
+    try{const url=URL.createObjectURL(blob),a=document.createElement("a");a.href=url;a.download=filename;a.style.display="none";document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(url),60000);ok=!inFrame}catch(e){}
+    if(ok)showInline(what+"を保存しました（ダウンロードフォルダを確認してください）。保存されていない場合は、下の画像を長押し・右クリックで保存できます。");
+    else showInline("この画面では直接保存できないため、下に表示しました。長押し・右クリックで保存できます。");
+    return}
+  try{await d.save({filename,data:blob});msg.textContent="保存しました。"}
   catch(e){if(e&&e.code==="declined")msg.textContent="保存をキャンセルしました。";else if(e&&e.code==="rate_limited")msg.textContent="少し待ってから、もう一度押してください。";
-    else showInline("直接保存できなかったため、下に画像を表示しました。長押し・右クリックで保存できます。")}
+    else showInline("直接保存できなかったため、下に表示しました。長押し・右クリックで保存できます。")}
+}
+async function saveResult(r,avg){
+  const msg=$("#svmsg");if(!msg)return;msg.textContent="画像を作っています…";
+  let blob=null;try{blob=await resultImage(r,avg)}catch(e){}
+  if(!$("#svmsg"))return;await deliver(blob,"adventure-result.png","結果の画像");
+}
+
+/* ===== 完成版プレイを GIF アニメにして保存 ===== */
+function gifLZW(idx){
+  const clear=256,eoi=257,out=[];let size=9,next=258,cur=0,bits=0,table=new Map();
+  const emit=c=>{cur|=c<<bits;bits+=size;while(bits>=8){out.push(cur&255);cur>>>=8;bits-=8}};
+  emit(clear);let p=idx[0];
+  for(let i=1;i<idx.length;i++){const k=idx[i],key=p<<8|k,c=table.get(key);
+    if(c!==undefined)p=c;
+    else{emit(p);
+      if(next===4096){emit(clear);next=258;size=9;table=new Map()}
+      else{if(next>=(1<<size))size++;table.set(key,next++)}
+      p=k}}
+  emit(p);emit(eoi);if(bits>0)out.push(cur&255);
+  return out;
+}
+function gifEncode(W,H,frames){ // frames: [{data:Uint8ClampedArray(RGBA), delay:ms}]
+  const parts=[],u8=a=>parts.push(a instanceof Uint8Array?a:new Uint8Array(a));
+  const pal=new Uint8Array(768);let n=0;
+  for(let r=0;r<6;r++)for(let g=0;g<7;g++)for(let b=0;b<6;b++){pal[n++]=Math.round(r*51);pal[n++]=Math.round(g*42.5);pal[n++]=Math.round(b*51)}
+  u8([71,73,70,56,57,97,W&255,W>>8,H&255,H>>8,0xf7,0,0]);u8(pal);
+  u8([0x21,0xff,11,78,69,84,83,67,65,80,69,50,46,48,3,1,0,0,0]);
+  for(const f of frames){
+    const d=f.data,idx=new Uint8Array(W*H);
+    for(let i=0,j=0;i<idx.length;i++,j+=4)idx[i]=Math.round(d[j]/51)*42+Math.round(d[j+1]/42.5)*6+Math.round(d[j+2]/51);
+    const cs=Math.round(f.delay/10);
+    u8([0x21,0xf9,4,0,cs&255,cs>>8,0,0,0x2c,0,0,0,0,W&255,W>>8,H&255,H>>8,0,8]);
+    const lz=gifLZW(idx),buf=new Uint8Array(lz.length+Math.ceil(lz.length/255)+1);let o=0;
+    for(let i=0;i<lz.length;i+=255){const len=Math.min(255,lz.length-i);buf[o++]=len;for(let k=0;k<len;k++)buf[o++]=lz[i+k]}
+    buf[o++]=0;u8(buf.subarray(0,o));
+  }
+  u8([0x3b]);return new Blob(parts,{type:"image/gif"});
+}
+async function playGif(r,onStep){
+  const W=480,H=300,F='"Hiragino Maru Gothic ProN","Yu Gothic","Meiryo","Noto Sans JP",sans-serif';
+  const c=document.createElement("canvas");c.width=W;c.height=H;const x=c.getContext("2d",{willReadFrequently:true});x.textBaseline="top";
+  const wrap=(t,font,max)=>{x.font=font;const out=[];let line="";for(const ch of String(t)){if(x.measureText(line+ch).width>max&&line){out.push(line);line=ch}else line+=ch}if(line)out.push(line);return out};
+  const rr=(X,Y,w,h,rad)=>{x.beginPath();x.moveTo(X+rad,Y);x.arcTo(X+w,Y,X+w,Y+h,rad);x.arcTo(X+w,Y+h,X,Y+h,rad);x.arcTo(X,Y+h,X,Y,rad);x.arcTo(X,Y,X+w,Y,rad);x.closePath()};
+  const frames=[],grab=ms=>frames.push({data:x.getImageData(0,0,W,H).data,delay:ms});
+  const centre=(lines,font,y,col,lh)=>{x.font=font;x.fillStyle=col;x.textAlign="center";lines.forEach((l,k)=>x.fillText(l,W/2,y+k*lh));x.textAlign="left"};
+  // タイトル
+  x.fillStyle="#151226";x.fillRect(0,0,W,H);centre(["アドベンチャー or アドベンチャ"],`800 14px ${F}`,60,"#5de0e6",20);
+  const tl=wrap("『"+GAME+"』",`900 26px ${F}`,W-60);centre(tl,`900 26px ${F}`,100,"#f7f0df",36);
+  centre(["イラスト：あなた ／ "+ILL+"の代打"],`700 15px ${F}`,110+tl.length*36+14,"#ffd23f",20);grab(2200);
+  const ims=await Promise.all(ST.arts.map(a=>loadImg(a.url)));
+  for(let si=0;si<SCENES.length;si++){
+    for(const l of SCENES[si].lines){
+      x.fillStyle="#ffffff";x.fillRect(0,0,W,H);if(ims[si])x.drawImage(ims[si],0,0,W,H);
+      x.font=`800 12px ${F}`;const cw=x.measureText(SCENES[si].name).width+20;rr(8,8,cw,22,11);x.fillStyle="#1b1730";x.fill();x.fillStyle="#ffd23f";x.fillText(SCENES[si].name,18,13);
+      const lines=wrap(l[1],`700 16px ${F}`,W-64).slice(0,3),bh=26+lines.length*22,by=H-bh-10;
+      rr(12,by,W-24,bh,12);x.fillStyle="#f7f0df";x.fill();x.lineWidth=3;x.strokeStyle="#1b1730";x.stroke();
+      if(l[0]){x.font=`800 12px ${F}`;const nw=x.measureText(l[0]).width+22;rr(24,by-12,nw,22,11);x.fillStyle="#1b1730";x.fill();x.fillStyle="#ffd23f";x.fillText(l[0],35,by-7)}
+      x.fillStyle="#1b1730";x.font=`700 16px ${F}`;lines.forEach((t,k)=>x.fillText(t,28,by+14+k*22));
+      grab(Math.max(2200,1200+l[1].length*110));
+    }
+    if(onStep)onStep(si+1);await new Promise(res=>setTimeout(res,0));
+  }
+  // おわり
+  x.fillStyle="#151226";x.fillRect(0,0,W,H);centre(["おしまい"],`900 30px ${F}`,54,"#f7f0df",30);
+  if(r){const hl=wrap(r.headline,`800 16px ${F}`,W-70).slice(0,3);centre(hl,`800 16px ${F}`,112,"#ffd23f",24);
+    centre(["レビュー平均 "+r.review_score+"　販売 "+r.sales.toLocaleString()+"本"],`700 14px ${F}`,122+hl.length*24+8,"#f7f0df",20);
+    if(r.award)centre(["称号："+r.award],`800 16px ${F}`,122+hl.length*24+40,"#5de0e6",20)}
+  grab(3500);
+  await new Promise(res=>setTimeout(res,0));
+  return gifEncode(W,H,frames);
+}
+async function saveGif(r){
+  const msg=$("#svmsg");if(!msg)return;msg.textContent="GIFを作っています…（数秒かかります）";
+  await new Promise(res=>setTimeout(res,30));
+  let blob=null;try{blob=await playGif(r,n=>{const m=$("#svmsg");if(m)m.textContent="GIFを作っています… "+n+" / "+SCENES.length})}catch(e){}
+  if(!$("#svmsg"))return;await deliver(blob,"adventure-play.gif","ゲームのGIF");
 }
 
 /* ===== 発売 → 世間の声 ===== */
@@ -998,10 +1079,11 @@ voicesは6件。うち1件は「${ILL}」の名前に触れてもよい。絶賛
     <h3 class="sec">総評</h3><div class="quote">${esc(r.verdict)}</div>
     <h3 class="sec">あなたの納品物</h3><p class="small">本来の担当：${esc(ILL)}</p>
     <div class="gal">${arts.map((a,k)=>`<figure><img src="${a.url}" alt="${esc(SCENES[k].name)}"><figcaption>${esc(SCENES[k].name)}：<b>${a.ev.score}点</b><br>「${esc(a.ev.looks_like)}」</figcaption></figure>`).join("")}</div>
-    <div class="center" style="margin-top:18px"><div style="display:flex;gap:12px;flex-wrap:wrap;justify-content:center"><button id="save">結果を画像で保存</button><button class="pk" id="again">もう一度つくる</button></div><p class="small" id="svmsg" aria-live="polite"></p></div><div id="svimg"></div>
+    <div class="center" style="margin-top:18px"><div style="display:flex;gap:12px;flex-wrap:wrap;justify-content:center"><button id="save">結果を画像で保存</button><button id="savegif">ゲームをGIFで保存</button><button class="pk" id="again">もう一度つくる</button></div><p class="small" id="svmsg" aria-live="polite"></p></div><div id="svimg"></div>
   </div>`);
   $("#again").onclick=title;
   $("#save").onclick=()=>saveResult(r,avg);
+  $("#savegif").onclick=()=>saveGif(r);
 }
 
 document.addEventListener("keydown",e=>{if((e.key==="Enter"||e.key===" ")&&keyNext&&!(e.target&&e.target.closest&&e.target.closest("button,input"))){e.preventDefault();keyNext()}});
